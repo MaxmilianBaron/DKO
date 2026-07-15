@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="cs">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="description" content="Interaktivní ukázka DKO — offline Android aplikace pro digitální kontroly objektů.">
+    <meta name="theme-color" content="#000000">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="DKO Demo">
+    <title>DKO — interaktivní demo</title>
+    <link rel="icon" href="assets/app-icon.svg" type="image/svg+xml">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div class="demo-shell">
+      <aside class="demo-sidebar">
+        <a class="demo-brand" href="#" data-demo-action="reset">
+          <img src="assets/app-icon.svg" alt="" class="demo-logo">
+          <span><strong>DKO</strong><small>Digitální kontrola objektů</small></span>
+        </a>
+
+        <section class="demo-panel">
+          <p class="demo-kicker">INTERAKTIVNÍ UKÁZKA</p>
+          <h1>Vyzkoušejte skutečný pracovní tok</h1>
+          <p>Adresy, osoby a protokoly jsou smyšlené. Fotografie jsou veřejně licencované ilustrační snímky, nikoli zákaznická data.</p>
+        </section>
+
+        <nav class="demo-journey" aria-label="Rychlý průchod">
+          <button data-jump="login"><span>01</span>Přihlášení</button>
+          <button data-jump="work"><span>02</span>Objekty a práce</button>
+          <button data-jump="inspection"><span>03</span>Kontrola</button>
+          <button data-jump="photo"><span>04</span>Foto a označení</button>
+          <button data-jump="history"><span>05</span>PDF a historie</button>
+          <button data-jump="admin"><span>06</span>Admin</button>
+        </nav>
+
+        <div class="demo-controls">
+          <button class="demo-control" data-demo-action="theme" aria-label="Přepnout světlý a tmavý vzhled">
+            <span data-theme-label>Tmavý vzhled</span>
+          </button>
+          <button class="demo-control" data-demo-action="reset">Obnovit demo</button>
+        </div>
+      </aside>
+
+      <main class="demo-stage">
+        <header class="stage-header">
+          <div>
+            <p class="demo-kicker">MOBILNÍ APLIKACE · ANDROID</p>
+            <h2 data-stage-title>Přihlášení do DKO</h2>
+          </div>
+          <div class="stage-actions">
+            <a class="mobile-preview-link" href="?mobile=1">Otevřít 1:1 mobilní demo</a>
+            <div class="demo-badge"><span></span> FAKE DATA</div>
+          </div>
+        </header>
+
+        <section class="device-area">
+          <div class="phone" aria-label="Interaktivní obrazovka DKO">
+            <div class="phone-speaker"></div>
+            <div class="android-status">
+              <span data-clock>09:41</span>
+              <span class="android-status-icons">● ◒ ▰</span>
+            </div>
+            <div id="app" class="app" aria-live="polite"></div>
+            <div class="android-nav"><span></span></div>
+          </div>
+        </section>
+
+        <footer class="stage-note">
+          <strong>Bezpečná veřejná ukázka.</strong>
+          <span>Neobsahuje produkční APK, databázi, zákaznické dokumenty ani skutečné osobní údaje.</span>
+        </footer>
+      </main>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>
