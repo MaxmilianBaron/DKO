@@ -100,6 +100,15 @@ async function main() {
     await waitFor(cdp, `document.body.innerText.includes('Vchodové dveře')`, 'inspection items');
     await click(cdp, '[data-photo-for="exterior.entrance_doors"]');
     await waitFor(cdp, `document.body.innerText.includes('Pořízení fotografie')`, 'photo capture');
+    await click(cdp, '[data-action="choose-photo"]');
+    await waitFor(cdp, `document.querySelectorAll('[data-library-photo]').length === 9`, 'nine-photo library');
+    const libraryIssues = await evaluate(cdp, `(async () => {
+      const sources=Array.from(document.querySelectorAll('.gallery img'), image => image.src);
+      const results=await Promise.all(sources.map(async source => ({source,ok:(await fetch(source)).ok})));
+      return results.filter(result => !result.ok).map(result => result.source);
+    })()`);
+    if (libraryIssues.length) throw new Error(`Broken real-photo library assets: ${libraryIssues.join(', ')}`);
+    await click(cdp, '[data-library-photo="0"]');
     await click(cdp, '[data-action="use-photo"]');
     await waitFor(cdp, `document.querySelector('#markup-canvas')`, 'markup editor');
     await draw(cdp, '#markup-canvas');

@@ -8,7 +8,8 @@ The DKO showcase is a static browser application designed for GitHub Pages.
 - `styles.css` recreates the current light and dark DKO visual language.
 - `app.js` owns the synthetic inspection state, navigation, role views, photo
   markup canvases, signature canvas, and HTML document previews.
-- `assets/photos/` contains only purpose-created synthetic inspection photos.
+- `assets/photos/` contains only reviewed CC0 illustrative photos with credits
+  recorded in `docs/demo-assets.md`.
 
 There is no backend, database, authentication service, analytics endpoint, or
 remote API. Reloading or using **Obnovit demo** returns the showcase to its

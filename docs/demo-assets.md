@@ -1,21 +1,25 @@
-# Synthetic demo assets
+# Real demo photo credits
 
-The four inspection photos under `assets/photos/` were generated specifically
-for this showcase using the built-in image generation workflow. No customer
-photo was used as an input or reference.
+The nine inspection photos in `assets/photos/` are real illustrative images
+found in public internet sources. They are not customer photos and do not
+document a real DKO inspection.
 
-## Prompt set
+Every selected source was published under the [CC0 1.0 public-domain
+dedication](https://creativecommons.org/publicdomain/zero/1.0/). The downloaded
+images were cropped to a 4:3 inspection view, resized to 960 × 720, and converted
+to WebP. No generated image remains in the active demo library.
 
-All prompts requested photorealistic, horizontal smartphone inspection photos
-with neutral Central European residential settings. Each prompt prohibited
-people, faces, addresses, readable labels, names, logos, brands, and watermarks.
+| Demo file | Original work and creator | Source |
+| --- | --- | --- |
+| `entrance-door.webp` | *Signed entrance in a residential apartment building* — Mateusz Konieczny | [Wikimedia Commons](https://commons.wikimedia.org/w/index.php?curid=118430083) |
+| `hallway-light.webp` | *Orange Glow Hallway* — Alan Levine (cogdogblog) | [Flickr](https://www.flickr.com/photos/cogdog/2650418317/) |
+| `building-facade.webp` | *Modern apartment building* — DennisM2 | [Flickr](https://www.flickr.com/photos/14674348@N04/14996764996/) |
+| `waste-bins.webp` | *Recycling Bins* — The Building Envelope | [StockSnap](https://stocksnap.io/photo/recycling-bins-H6T8IOA0RX) |
+| `mailboxes.webp` | *Free apartment mailbox image* — Rawpixel | [Rawpixel](https://www.rawpixel.com/image/5912274/image-public-domain-glass-free) |
+| `courtyard.webp` | *Holme Ringvej 148 (under renovation)* — Lav Ulv | [Flickr](https://www.flickr.com/photos/99460566@N06/36017586680/) |
+| `inside-hallway.webp` | *Apartment hallway* — Kurtkaiser | [Wikimedia Commons](https://commons.wikimedia.org/w/index.php?curid=114060605) |
+| `stairwell.webp` | *Candler Building Stairwell* — Derrellwilliams | [Wikimedia Commons](https://commons.wikimedia.org/w/index.php?curid=160282788) |
+| `water-meter.webp` | *WMBUS Water Meter for submetering* — Boutboul | [Wikimedia Commons](https://commons.wikimedia.org/w/index.php?curid=156125142) |
 
-- `entrance-door.webp`: worn apartment entrance door, chipped paint, and a
-  slightly misaligned closer.
-- `hallway-light.webp`: shared stairwell with one working and one unlit fixture.
-- `mailboxes.webp`: old metal mailbox bank with one bent door and blank labels.
-- `courtyard.webp`: ordinary inner courtyard with a paving crack and weeds near
-  a drain.
-
-Generated PNG sources were converted to 1280-pixel WebP assets for fast page
-loading. The generated source files remain outside this repository.
+These credits are kept even though CC0 does not require attribution, so the
+origin and publication boundary of every demo photograph remain auditable.

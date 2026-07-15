@@ -5,7 +5,8 @@
 - manually recreated user interface based on approved product behavior
 - fictional Technician and Admin identities
 - fictional Prague-style addresses and protocol identifiers
-- synthetic answers, notes, signatures, PDF content, and building photos
+- synthetic answers, notes, signatures, and PDF content
+- reviewed CC0 illustrative photos with no connection to customer inspections
 - high-level public product architecture
 - presentation-only shortcuts and simulated document actions
 
@@ -25,7 +26,7 @@ Before changing the repository from private to public:
 
 1. Review every visible string and screenshot.
 2. Confirm that the DKO product icon is approved for public presentation.
-3. Confirm that all photos are the generated demo assets in `assets/photos/`.
+3. Confirm that every photo is listed with its source in `docs/demo-assets.md`.
 4. Search the repository for customer names, package files, databases, secrets,
    device identifiers, and absolute local paths.
 5. Run `node scripts/verify-demo.mjs` against a local server.

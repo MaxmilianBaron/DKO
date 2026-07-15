@@ -40,7 +40,8 @@ async function main(){
     await click(cdp,'[data-jump="admin"]');await capture(cdp,'07-admin');
     await cdp.send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
     await cdp.send('Page.navigate',{url});await delay(500);await capture(cdp,'08-mobile-login-1to1');
-    await click(cdp,'[data-jump="photo"]');await draw(cdp,'#markup-canvas');await capture(cdp,'09-mobile-photo-markup');
+    await click(cdp,'[data-jump="photo"]');await click(cdp,'[data-route="photo-capture"]');await click(cdp,'[data-action="choose-photo"]');await delay(500);await capture(cdp,'10-mobile-real-photo-library');
+    await click(cdp,'[data-library-photo="0"]');await click(cdp,'[data-action="use-photo"]');await draw(cdp,'#markup-canvas');await capture(cdp,'09-mobile-photo-markup');
     socket.close();console.log(`Captured DKO demo screenshots to ${output}`);
   }finally{browser.kill();await delay(300);await rm(profile,{recursive:true,force:true}).catch(()=>{});}
 }

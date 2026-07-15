@@ -5,8 +5,13 @@ document.documentElement.classList.toggle('mobile-mode', query.get('mobile') ===
 const photoLibrary = [
   { src: 'assets/photos/entrance-door.webp', title: 'Vstupní dveře' },
   { src: 'assets/photos/hallway-light.webp', title: 'Osvětlení chodby' },
+  { src: 'assets/photos/building-facade.webp', title: 'Fasáda objektu' },
+  { src: 'assets/photos/waste-bins.webp', title: 'Stanoviště odpadu' },
   { src: 'assets/photos/mailboxes.webp', title: 'Poštovní schránky' },
   { src: 'assets/photos/courtyard.webp', title: 'Dvůr objektu' },
+  { src: 'assets/photos/inside-hallway.webp', title: 'Vnitřní chodba' },
+  { src: 'assets/photos/stairwell.webp', title: 'Schodiště' },
+  { src: 'assets/photos/water-meter.webp', title: 'Vodoměr' },
 ];
 
 const sections = [
@@ -69,6 +74,13 @@ function initialState() {
     photos: [
       { id: 'F001', sequence: 1, itemKey: 'exterior.entrance_doors', src: photoLibrary[0].src, markedSrc: null, location: 'Hlavní vstup', description: 'Odřený nátěr u spodní hrany.', strokes: [] },
       { id: 'F002', sequence: 2, itemKey: 'lighting.lights', src: photoLibrary[1].src, markedSrc: null, location: '2. patro', description: 'Jedno svítidlo nesvítí.', strokes: [] },
+      { id: 'F003', sequence: 3, itemKey: 'exterior.street_facade', src: photoLibrary[2].src, markedSrc: null, location: 'Uliční část', description: 'Celkový pohled na fasádu.', strokes: [] },
+      { id: 'F004', sequence: 4, itemKey: 'waste.location_condition', src: photoLibrary[3].src, markedSrc: null, location: 'Stanoviště nádob', description: 'Kontrola prostoru pro odpad.', strokes: [] },
+      { id: 'F005', sequence: 5, itemKey: 'common.mailboxes', src: photoLibrary[4].src, markedSrc: null, location: 'Přízemí', description: 'Přehled poštovních schránek.', strokes: [] },
+      { id: 'F006', sequence: 6, itemKey: 'yard.technical', src: photoLibrary[5].src, markedSrc: null, location: 'Vnitroblok', description: 'Technický stav dvora.', strokes: [] },
+      { id: 'F007', sequence: 7, itemKey: 'inside.cleaning_record', src: photoLibrary[6].src, markedSrc: null, location: 'Společná chodba', description: 'Stav společných vnitřních prostor.', strokes: [] },
+      { id: 'F008', sequence: 8, itemKey: 'other.cleaning', src: photoLibrary[7].src, markedSrc: null, location: 'Schodiště', description: 'Celkový stav schodiště.', strokes: [] },
+      { id: 'F009', sequence: 9, itemKey: 'meters.water_1', src: photoLibrary[8].src, markedSrc: null, location: 'Technická místnost', description: 'Doklad kontrolovaného měřidla.', strokes: [] },
     ],
     answers: {
       'outside.house_number': { value: 'YES', note: 'Tabulka je čitelná.' },
@@ -369,7 +381,7 @@ function adminTabContent(tab) {
     technicians: `<button class="button button--wide">${icon('plus')} Přidat technika</button><div class="admin-list"><button class="list-button"><span class="list-icon">${icon('badge')}</span><span><strong>Daniel Novák</strong><small>Aktivní účet · Technik</small></span></button><button class="list-button"><span class="list-icon">${icon('badge')}</span><span><strong>Petra Malá</strong><small>Aktivní účet · Technik</small></span></button></div><p class="body-copy">Účet se kvůli auditní historii nikdy nemaže, lze jej pouze deaktivovat.</p>`,
     buildings: `<button class="button button--wide">${icon('plus')} Přidat dům</button><div class="admin-list">${['Ukázková 12, Praha 3','Javorová 8, Praha 10','Parková 31, Praha 7'].map((title,index) => `<button class="list-button"><span class="list-icon">${icon('building')}</span><span><strong>${title}</strong><small>Interval ${index ? 30 : 14} dní · pouze fake data</small></span></button>`).join('')}</div>`,
     backup: `<div class="stack"><h2 class="title">Export a import dat</h2><p class="body-copy">Šifrovaný soubor zahrnuje databázi, originály i publikované fotografie, PDF a nastavení. V tomto demu se žádný soubor nevytváří.</p></div><div class="field"><label>Heslo zálohy</label><input class="input" type="password" value="demoheslo"></div><button class="button button--wide" data-demo-toast="Ukázkový export byl simulován">${icon('backup')} Exportovat data</button><button class="button button--wide button--outline" data-demo-toast="Ukázkový import byl simulován">Importovat a sloučit data</button>`,
-    integrity: `<div class="stack"><h2 class="title">Kontrola integrity</h2><p class="body-copy">Ověří databázi, existenci a kontrolní součty originálů fotografií i PDF.</p></div><button class="button button--wide" data-action="integrity-run">${icon('shield')} Spustit kontrolu</button>${state.integrityRan ? `<div class="integrity-result"><strong>Data jsou v pořádku</strong><div class="small">24 souborů · 4 fotografie · 3 PDF · demo úložiště</div></div>` : ''}`,
+    integrity: `<div class="stack"><h2 class="title">Kontrola integrity</h2><p class="body-copy">Ověří databázi, existenci a kontrolní součty originálů fotografií i PDF.</p></div><button class="button button--wide" data-action="integrity-run">${icon('shield')} Spustit kontrolu</button>${state.integrityRan ? `<div class="integrity-result"><strong>Data jsou v pořádku</strong><div class="small">29 souborů · 9 fotografií · 3 PDF · demo úložiště</div></div>` : ''}`,
     form: `<section class="hero-card stack"><strong>Seznam pro nové kontroly</strong><span class="small">Změny se použijí jen u nových kontrol. Rozpracované a hotové protokoly zachovávají svůj neměnný otisk.</span></section><div class="admin-list">${sections.slice(0,5).map(section => `<button class="list-button"><span class="list-icon">${icon(section.icon)}</span><span><strong>${section.title}</strong><small>${section.items.length} ukázkové položky · zobrazeno</small></span></button>`).join('')}</div>`,
     device: `<div class="stack"><h2 class="title">Telefon</h2><p class="body-copy">Stav zařízení a lokální diagnostika.</p></div><section class="outlined-card card-pad stack"><div class="row-between"><span class="muted">Úložiště</span><strong>V pořádku</strong></div><div class="row-between"><span class="muted">Fotoaparát</span><strong>Demo režim</strong></div><div class="row-between"><span class="muted">PDF engine</span><strong>OK</strong></div><div class="row-between"><span class="muted">Internetové oprávnění</span><strong>Není požadováno</strong></div></section>`,
     print: `<div class="stack"><h2 class="title">Tisk</h2><p class="body-copy">Protokol používá 2× A4 na šířku. Fotolist používá samostatné A4 na výšku se čtyřmi A6 oblastmi.</p></div><button class="button button--wide" data-demo-toast="Kalibrační stránka byla otevřena v ukázce">${icon('print')} Vytisknout kalibrační stránku</button>`,
@@ -400,7 +412,7 @@ function renderModal() {
       <div class="button-row"><button class="button button--outline" data-action="modal-close">Zrušit</button><button class="button" data-action="confirm-login">Přihlásit</button></div>
     </section></div>`;
   }
-  if (state.modal === 'photo-gallery') return `<div class="modal"><section class="dialog"><h2>Vyberte ukázkový snímek</h2><p>Všechny fotografie byly vytvořené pouze pro toto demo.</p><div class="gallery">${photoLibrary.map((photo,index) => `<button data-library-photo="${index}" class="${state.pendingPhoto?.libraryIndex === index ? 'is-selected' : ''}"><img src="${photo.src}" alt="${photo.title}"><span>${photo.title}</span></button>`).join('')}</div><button class="button button--wide button--outline" data-action="modal-close">Zavřít</button></section></div>`;
+  if (state.modal === 'photo-gallery') return `<div class="modal"><section class="dialog"><h2>Vyberte ukázkový snímek</h2><p>Jde o skutečné ilustrační fotografie s licencí CC0, nikoli o zákaznickou dokumentaci.</p><div class="gallery">${photoLibrary.map((photo,index) => `<button data-library-photo="${index}" class="${state.pendingPhoto?.libraryIndex === index ? 'is-selected' : ''}"><img src="${photo.src}" alt="${photo.title}"><span>${photo.title}</span></button>`).join('')}</div><a class="small primary-text" href="docs/demo-assets.md" target="_blank" rel="noopener">Zdroje a licence fotografií</a><button class="button button--wide button--outline" data-action="modal-close">Zavřít</button></section></div>`;
   if (state.modal === 'incomplete') {
     const incomplete = allItems.length - totalProgress();
     return `<div class="modal"><section class="dialog"><h2>${incomplete} položek není hotových</h2><p>Kontrolu lze uzavřít, ale hotový protokol už nepůjde změnit bez nové revize.</p><div class="button-row"><button class="button button--outline" data-action="modal-close">Pokračovat v kontrole</button><button class="button" data-action="go-signature">Přejít k podpisu</button></div></section></div>`;
