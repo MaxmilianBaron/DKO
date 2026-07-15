@@ -142,8 +142,32 @@ async function main() {
     await draw(cdp, '#signature-canvas');
     await click(cdp, '[data-action="finalize"]');
     await waitFor(cdp, `document.body.innerText.includes('Kompletní PDF')`, 'history documents');
-    await click(cdp, '[data-pdf="0"]');
-    await waitFor(cdp, `document.querySelector('.pdf-page')`, 'PDF preview');
+    await click(cdp, '[data-pdf-document="protocol"]');
+    await waitFor(cdp, `document.querySelector('[data-protocol-page="1"]')`, 'protocol PDF page one');
+    const protocolPageOne = await evaluate(cdp, `Array.from(document.querySelectorAll('[data-pdf-row-key]'), row => row.dataset.pdfRowKey)`);
+    if (protocolPageOne.length !== 28) throw new Error(`Protocol page one must contain 28 active items, received ${protocolPageOne.length}.`);
+    await click(cdp, '[data-action="pdf-next"]');
+    await waitFor(cdp, `document.querySelector('[data-protocol-page="2"]')`, 'protocol PDF page two');
+    const protocolDesktopFrame = await evaluate(cdp, `({mobileMode:document.documentElement.classList.contains('mobile-mode'),sidebar:getComputedStyle(document.querySelector('.demo-sidebar')).display,viewport:innerWidth})`);
+    if (protocolDesktopFrame.mobileMode || protocolDesktopFrame.sidebar === 'none') throw new Error(`Desktop frame disappeared on PDF page two: ${JSON.stringify(protocolDesktopFrame)}`);
+    const protocolPageTwo = await evaluate(cdp, `Array.from(document.querySelectorAll('[data-pdf-row-key]'), row => row.dataset.pdfRowKey)`);
+    const protocolKeys = new Set([...protocolPageOne, ...protocolPageTwo]);
+    if (protocolPageTwo.length !== 20 || protocolKeys.size !== 48) {
+      throw new Error(`Protocol must cover all 48 active items across 28+20 rows: ${JSON.stringify({pageOne:protocolPageOne.length,pageTwo:protocolPageTwo.length,unique:protocolKeys.size})}`);
+    }
+    await click(cdp, '[data-route="history"]');
+    await click(cdp, '[data-pdf-document="photos"]');
+    await waitFor(cdp, `document.querySelector('[data-photo-sheet="1"]')`, 'photo PDF first sheet');
+    const photoDocument = await evaluate(cdp, `({pageCount:currentPdfPageCount(),expected:Math.ceil(state.photos.length/4),cards:document.querySelectorAll('.photo-sheet figure').length})`);
+    if (photoDocument.pageCount !== photoDocument.expected || photoDocument.cards !== 4) throw new Error(`Photo PDF does not use four A6 cards per A4: ${JSON.stringify(photoDocument)}`);
+    await evaluate(cdp, `state.pdfPage=currentPdfPageCount()-1;render()`);
+    await waitFor(cdp, `document.querySelector('[data-photo-sheet="' + currentPdfPageCount() + '"]')`, 'photo PDF final sheet');
+    const lastSheet = await evaluate(cdp, `({cards:document.querySelectorAll('.photo-sheet figure').length,expected:state.photos.length%4||4})`);
+    if (lastSheet.cards !== lastSheet.expected) throw new Error(`Unexpected final photo sheet card count: ${JSON.stringify(lastSheet)}.`);
+    await click(cdp, '[data-route="history"]');
+    await click(cdp, '[data-pdf-document="complete"]');
+    const completeDocument = await evaluate(cdp, `({pageCount:currentPdfPageCount(),expected:2+Math.ceil(state.photos.length/4),document:state.pdfDocument})`);
+    if (completeDocument.document !== 'complete' || completeDocument.pageCount !== completeDocument.expected) throw new Error(`Complete PDF page count mismatch: ${JSON.stringify(completeDocument)}`);
     await click(cdp, '[data-jump="admin"]');
     await waitFor(cdp, `document.body.innerText.includes('Kontrola dat')`, 'admin menu');
     await click(cdp, '[data-admin="integrity"]');
@@ -187,7 +211,7 @@ async function main() {
     })()`);
     if (serviceWorkerState !== 'activated') throw new Error(`PWA service worker failed: ${serviceWorkerState}`);
     socket.close();
-    console.log('DKO demo verification passed: technician flow, photo markup, signature, PDF, Admin, assets and edge-to-edge mobile mode.');
+    console.log('DKO demo verification passed: technician flow, photo markup, signature, complete 48-item PDF, photo sheets, Admin, assets and edge-to-edge mobile mode.');
   } finally {
     socket?.close();
     browser.kill();

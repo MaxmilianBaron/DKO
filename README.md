@@ -1,6 +1,14 @@
 # DKO — Digitální kontrola objektů · interaktivní demo
 
-## [▶ Spustit živé interaktivní demo DKO](https://maxmilianbaron.github.io/DKO-preview/)
+## Stav interaktivního preview
+
+Demo je nyní součástí jediného repozitáře `MaxmilianBaron/DKO`, stejně jako u
+WMS. Repozitář je dočasně privátní, proto GitHub Pages zatím není veřejně
+dostupné. Po budoucím zveřejnění bude adresa:
+
+```text
+https://maxmilianbaron.github.io/DKO/
+```
 
 Na telefonu se demo otevře přes celou obrazovku jako mobilní aplikace. Na
 počítači zůstane skutečné mobilní rozhraní uvnitř rámečku telefonu.
@@ -9,11 +17,12 @@ počítači zůstane skutečné mobilní rozhraní uvnitř rámečku telefonu.
 
 ## Česky
 
-Interaktivní veřejná ukázka DKO, offline Android aplikace pro terénní kontroly
+Interaktivní ukázka DKO, offline Android aplikace pro terénní kontroly
 budov, fotodokumentaci, auditovatelné revize a tvorbu tiskových PDF protokolů.
 
-Zdrojový repozitář zůstává privátní. Živé demo obsahuje výhradně smyšlená data
-a veřejně licencované ilustrační fotografie, nikoli zákaznickou dokumentaci.
+Jediný repozitář nyní obsahuje bezpečné statické demo, jeho dokumentaci i
+připravený Pages workflow. Demo obsahuje výhradně smyšlená data a veřejně
+licencované ilustrační fotografie, nikoli zákaznickou dokumentaci.
 
 ### Lokální náhled
 
@@ -40,7 +49,11 @@ http://127.0.0.1:4174/
   </tr>
   <tr>
     <td><strong>Historie a auditovatelné dokumenty</strong><br><img src="docs/screenshots/05-history.png" alt="Historie protokolů" width="420"></td>
-    <td><strong>Náhled výsledného PDF</strong><br><img src="docs/screenshots/06-pdf-preview.png" alt="Náhled PDF protokolu" width="420"></td>
+    <td><strong>První A4 protokolu – 28 položek</strong><br><img src="docs/screenshots/06-pdf-preview.png" alt="První strana PDF protokolu" width="420"></td>
+  </tr>
+  <tr>
+    <td><strong>Druhá A4 protokolu – 20 položek</strong><br><img src="docs/screenshots/06b-pdf-preview-page-2.png" alt="Druhá strana PDF protokolu" width="420"></td>
+    <td><strong>Fotodokumentace 4× A6</strong><br><img src="docs/screenshots/06c-photo-sheet-preview.png" alt="Fotolist se čtyřmi oblastmi A6" width="420"></td>
   </tr>
   <tr>
     <td><strong>Lokální Admin nastavení</strong><br><img src="docs/screenshots/07-admin.png" alt="Admin nastavení" width="420"></td>
@@ -65,7 +78,9 @@ http://127.0.0.1:4174/
 - uložení označené pracovní kopie a zachování výchozího snímku
 - upozornění na nehotové položky, elektronický podpis a dokončení
 - historii, vytvoření opravy jako nové revize a náhled dokumentů
-- dvoustránkový protokol A4 na šířku a fotolist 4× A6
+- přesné dvě A4 protokolu na šířku se všemi 48 položkami (28 + 20)
+- dvanáct A4 fotolistů na výšku, každý se čtyřmi samostatnými oblastmi A6
+- samostatný Protokol, Fotodokumentaci a kompletní 14stránkový dokument
 - Admin přehled účtů, domů, seznamu položek, zálohy, tisku a integrity
 - světlý i tmavý vzhled odpovídající systémovému motivu Androidu
 - mobilní zobrazení přes celou obrazovku a možnost instalace jako webové aplikace
@@ -113,13 +128,17 @@ node scripts/capture-screenshots.mjs
 ```
 
 Automatizovaný scénář ověřuje technický průchod, kreslení do fotografie,
-podpis, PDF, Admin část, obrázky a horizontální přetečení stránky.
+podpis, přesné pokrytí 48 položek na dvou stranách PDF, všechny fotolisty,
+Admin část, obrázky a horizontální přetečení stránky.
 
 Všechna práva vyhrazena Aardvarkland Inc.
 
 ## English
 
-## [▶ Launch the live interactive DKO demo](https://maxmilianbaron.github.io/DKO-preview/)
+The demo now lives in the single private `MaxmilianBaron/DKO` repository, using
+the same one-repository structure as the WMS showcase. GitHub Pages will become
+available at `https://maxmilianbaron.github.io/DKO/` after the repository is
+made public.
 
 On a phone, the demo fills the screen like the mobile application. On desktop,
 the same real mobile interface remains presented inside a phone frame.
@@ -128,8 +147,8 @@ Interactive showcase of DKO, an offline Android application for field building
 inspections, photo documentation, auditable revisions, and printable PDF
 reports.
 
-The source repository remains private. The live showcase contains fictional
-data and openly licensed illustrative photographs, not customer evidence.
+The repository is currently private. The showcase contains fictional data and
+openly licensed illustrative photographs, not customer evidence.
 
 ### Local preview
 
@@ -150,7 +169,9 @@ Then open `http://127.0.0.1:4174/`.
 - undo, clear, rotate, description, and saving a marked working copy
 - incomplete-item warning, electronic signature, and completion
 - history, auditable revision creation, and document previews
-- two landscape A4 protocol pages and a 4× A6 photo sheet
+- two landscape A4 protocol pages containing all 48 items (28 + 20)
+- twelve portrait A4 photo sheets with four separate A6 cards each
+- separate protocol, photo-documentation, and complete 14-page previews
 - local Admin areas for accounts, buildings, forms, backup, print, and integrity
 - light and dark presentation matching Android system themes
 

@@ -299,19 +299,39 @@ button { color: inherit; cursor: pointer; }
 .document-row .icon-button { width: 34px; height: 34px; flex-basis: 34px; color: var(--primary); }
 
 .pdf-viewer { flex: 1; display: grid; place-items: center; overflow: auto; padding: 12px; background: #303030; }
-.pdf-page { width: 100%; aspect-ratio: 1.414 / 1; padding: 12px; background: #fff; color: #111; box-shadow: 0 4px 18px rgba(0,0,0,.35); font-family: Arial, sans-serif; }
-.pdf-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-bottom: 5px; border-bottom: 2px solid #111; font-size: 7px; }
-.pdf-header strong { font-size: 9px; }
-.pdf-logo { display: flex; align-items: center; gap: 5px; font-weight: 800; }
-.pdf-logo span { display: block; width: 17px; height: 17px; background: linear-gradient(90deg,#e53935 0 48%,#fbc02d 48%); }
-.pdf-table { width: 100%; margin-top: 6px; border-collapse: collapse; table-layout: fixed; font-size: 5.5px; }
-.pdf-table th, .pdf-table td { padding: 2px 3px; border: 1px solid #444; text-align: left; }
-.pdf-table th { background: #e5e5e5; font-size: 5.7px; }
-.pdf-footer { display: flex; justify-content: space-between; margin-top: 5px; font-size: 5.4px; }
-.photo-sheet { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 8px; width: 71%; aspect-ratio: 1 / 1.414; padding: 9px; background: #fff; color: #111; box-shadow: 0 4px 18px rgba(0,0,0,.35); }
-.photo-sheet figure { display: flex; flex-direction: column; min-height: 0; margin: 0; padding: 5px; border: 1px solid #777; }
+.pdf-page { display: flex; flex-direction: column; width: 100%; max-width: 760px; aspect-ratio: 842 / 595; flex: 0 0 auto; padding: 7px; background: #fff; color: #111; box-shadow: 0 4px 18px rgba(0,0,0,.35); font-family: Arial, sans-serif; }
+.pdf-header { display: grid; grid-template-columns: 1.15fr 1.6fr 1.25fr; align-items: center; gap: 5px; min-height: 31px; padding-bottom: 4px; border-bottom: 1px solid #111; font-size: 4.3px; line-height: 1.25; }
+.pdf-logo { display: flex; align-items: center; gap: 4px; min-width: 0; font-weight: 800; }
+.pdf-logo > strong { font-size: 5px; line-height: 1.05; }
+.pdf-logo-mark { position: relative; display: block; width: 19px; height: 18px; flex: 0 0 19px; }
+.pdf-logo-mark i, .pdf-logo-mark b { position: absolute; display: block; }
+.pdf-logo-mark i { bottom: 0; left: 0; width: 12px; height: 10px; background: #e13d37; }
+.pdf-logo-mark b { top: 1px; right: 0; width: 10px; height: 12px; background: #f8bc2a; }
+.pdf-logo-mark b::before { position: absolute; right: 0; bottom: 100%; border-right: 5px solid transparent; border-bottom: 4px solid #f8bc2a; border-left: 5px solid transparent; content: ''; }
+.pdf-heading, .pdf-document-meta { display: grid; gap: 2px; }
+.pdf-heading > strong { font-size: 5.8px; }
+.pdf-document-meta { justify-items: end; text-align: right; }
+.pdf-table { width: 100%; height: 100%; margin-top: 4px; border-collapse: collapse; table-layout: fixed; font-size: 3.9px; line-height: 1.05; }
+.pdf-table th, .pdf-table td { overflow: hidden; padding: 1px 2px; border: .6px solid #444; text-align: left; vertical-align: middle; }
+.pdf-table td { max-height: 8px; }
+.pdf-table th { background: #e1e4e2; font-size: 4px; letter-spacing: .03em; }
+.pdf-table .pdf-section-row { height: 7px; }
+.pdf-table .pdf-section-row th { padding: 1px 3px; }
+.pdf-footer { display: grid; grid-template-columns: 1fr 1.25fr 1fr; align-items: end; gap: 5px; min-height: 17px; padding-top: 4px; border-top: .7px solid #111; font-size: 4px; }
+.pdf-footer > :last-child { text-align: right; }
+.pdf-signature { text-align: center; }
+.pdf-signature i { display: inline-block; min-width: 55px; margin-left: 3px; border-bottom: .7px solid #111; font-family: cursive; font-size: 6px; }
+.photo-sheet { position: relative; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 0; width: 71%; max-width: 520px; aspect-ratio: 595 / 842; flex: 0 0 auto; padding: 0; background: #fff; color: #111; box-shadow: 0 4px 18px rgba(0,0,0,.35); font-family: Arial, sans-serif; }
+.photo-sheet::before, .photo-sheet::after { position: absolute; z-index: 2; pointer-events: none; content: ''; }
+.photo-sheet::before { top: 0; bottom: 0; left: 50%; border-left: 1px dashed #888; }
+.photo-sheet::after { top: 50%; right: 0; left: 0; border-top: 1px dashed #888; }
+.photo-sheet figure { min-width: 0; min-height: 0; margin: 0; padding: 6px; }
+.photo-sheet-card { display: flex; height: 100%; min-height: 0; flex-direction: column; padding: 4px; border: 1px solid #777; }
 .photo-sheet img { width: 100%; min-height: 0; flex: 1; object-fit: contain; background: #eee; }
-.photo-sheet figcaption { margin-top: 3px; font-size: 6px; }
+.photo-sheet figcaption { display: grid; gap: 1px; margin-top: 3px; font-size: 4.3px; line-height: 1.15; }
+.photo-sheet figcaption > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.photo-sheet-title { display: flex; justify-content: space-between; gap: 3px; font-size: 4.8px; }
+.photo-sheet-footer { position: absolute; right: 5px; bottom: 1px; font-size: 3.6px; }
 .pdf-controls { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 58px; padding: 8px 10px; background: var(--surface-low); }
 
 .modal { position: absolute; inset: 0; z-index: 50; display: grid; place-items: center; padding: 18px; background: rgba(0,0,0,.6); }

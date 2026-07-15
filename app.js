@@ -71,7 +71,18 @@ const sections = [
   ] },
 ];
 
-const allItems = sections.flatMap(section => section.items.map(item => ({ ...item, sectionKey: section.key })));
+const secondProtocolPageKeys = new Set([
+  'common.stairs', 'common.railings', 'common.attic', 'common.cellars',
+  'yard.condition', 'yard.technical', 'yard.greenery', 'yard.buildings',
+  'lighting.switches', 'lighting.lights', 'lighting.covers', 'lighting.cellar_a', 'lighting.cellar_b', 'lighting.distribution_boards',
+  'other.cleaning', 'other.notes',
+  'meters.water_1', 'meters.water_2', 'meters.electricity_1', 'meters.electricity_2',
+]);
+const allItems = sections.flatMap(section => section.items.map(item => ({
+  ...item,
+  sectionKey: section.key,
+  pdfPage: secondProtocolPageKeys.has(item.key) ? 2 : 1,
+})));
 const photoLibrary = allItems.map((item, index) => ({
   itemKey: item.key,
   title: item.label,
@@ -88,6 +99,7 @@ function initialState() {
     currentSection: 'outside_information',
     selectedItem: 'exterior.entrance_doors',
     pdfPage: 0,
+    pdfDocument: 'complete',
     adminTab: null,
     final: true,
     signature: true,
@@ -331,9 +343,10 @@ function renderSignature() {
 }
 
 function historyDocuments() {
-  return `<div class="document-row"><button class="button button--text" data-pdf="0">Protokol</button><button class="icon-button" data-demo-toast="PDF bylo uloženo pouze v ukázce">${icon('download')}</button><button class="icon-button" data-demo-toast="Otevřen tiskový dialog ukázky">${icon('print')}</button><button class="icon-button" data-demo-toast="Sdílení je v demu vypnuté">${icon('share')}</button></div>
-    <div class="document-row"><button class="button button--text" data-pdf="2">Fotodokumentace 4× A6</button><button class="icon-button" data-demo-toast="PDF bylo uloženo pouze v ukázce">${icon('download')}</button><button class="icon-button" data-demo-toast="Otevřen tiskový dialog ukázky">${icon('print')}</button><button class="icon-button" data-demo-toast="Sdílení je v demu vypnuté">${icon('share')}</button></div>
-    <div class="document-row"><button class="button button--text" data-pdf="0">Kompletní PDF</button><button class="icon-button" data-demo-toast="PDF bylo uloženo pouze v ukázce">${icon('download')}</button><button class="icon-button" data-demo-toast="Otevřen tiskový dialog ukázky">${icon('print')}</button><button class="icon-button" data-demo-toast="Sdílení je v demu vypnuté">${icon('share')}</button></div>`;
+  const photoPages = Math.max(1, Math.ceil(state.photos.length / 4));
+  return `<div class="document-row"><button class="button button--text" data-pdf-document="protocol" data-pdf="0">Protokol · 2 strany A4</button><button class="icon-button" data-demo-toast="PDF bylo uloženo pouze v ukázce">${icon('download')}</button><button class="icon-button" data-demo-toast="Otevřen tiskový dialog ukázky">${icon('print')}</button><button class="icon-button" data-demo-toast="Sdílení je v demu vypnuté">${icon('share')}</button></div>
+    <div class="document-row"><button class="button button--text" data-pdf-document="photos" data-pdf="0">Fotodokumentace · ${photoPages}× A4 / 4× A6</button><button class="icon-button" data-demo-toast="PDF bylo uloženo pouze v ukázce">${icon('download')}</button><button class="icon-button" data-demo-toast="Otevřen tiskový dialog ukázky">${icon('print')}</button><button class="icon-button" data-demo-toast="Sdílení je v demu vypnuté">${icon('share')}</button></div>
+    <div class="document-row"><button class="button button--text" data-pdf-document="complete" data-pdf="0">Kompletní PDF · ${2 + photoPages} stran</button><button class="icon-button" data-demo-toast="PDF bylo uloženo pouze v ukázce">${icon('download')}</button><button class="icon-button" data-demo-toast="Otevřen tiskový dialog ukázky">${icon('print')}</button><button class="icon-button" data-demo-toast="Sdílení je v demu vypnuté">${icon('share')}</button></div>`;
 }
 
 function renderHistory() {
@@ -355,32 +368,77 @@ function renderHistory() {
     </div></div>`, { drawer: true });
 }
 
-function pdfTable(page) {
-  const rows1 = [
-    ['INFORMACE VNĚ OBJEKTU','',''],['Tabulka s č. p.','Ano','Tabulka je čitelná'],['Tabulka s č. o.','Ano',''],['INFORMACE UVNITŘ OBJEKTU','',''],['Kontakty správce','Ano',''],['Záznam o úklidu','Uveden','Poslední záznam dnes'],['VENKOVNÍ OBHLÍDKA OBJEKTU','',''],['Fasáda uliční','Nepoškozená',''],['Vchodové dveře','Nefunkční','Zavírač nedovírá · Foto F001'],['POPELNICE','',''],['Umístění popelnic / stav','V pořádku',''],['Okolí popelnic','Čisté',''],['SPOLEČNÉ PROSTORY','',''],['Poštovní schránky','Poškozené','Dvířka schránky č. 8 nedrží'],['Schody','Zachovalé',''],
-  ];
-  const rows2 = [
-    ['DVŮR / ZAHRÁDKA','',''],['Stav dvora','Čistý','Foto F004'],['Technický stav povrchu','Zachovalý',''],['OSVĚTLENÍ','',''],['Vypínače ve všech patrech','Funkční',''],['Světla ve všech patrech','Některá nesvítí','2. patro · Foto F002'],['OSTATNÍ','',''],['Úklid společných prostor','V pořádku',''],['Další zjištění','Bez zjištění',''],['MĚŘIDLA','',''],['Vodoměr 1','Odečteno','Ukázkový stav 01234'],['Elektroměr 1','Odečteno','Ukázkový stav 05678'],
-  ];
-  const rows = page === 0 ? rows1 : rows2;
-  return `<div class="pdf-page">
-    <div class="pdf-header"><div class="pdf-logo"><span></span> DEMO SPRÁVA OBJEKTŮ</div><strong>Záznam z místního šetření</strong><div>Číslo: DKO-DEMO-2026-001 · část ${page+1}/2</div></div>
-    <table class="pdf-table"><colgroup><col style="width:34%"><col style="width:25%"><col></colgroup><tbody>${rows.map(row => row[1] === '' ? `<tr><th colspan="3">${row[0]}</th></tr>` : `<tr><td><strong>${row[0]}</strong></td><td>${row[1]}</td><td>${row[2]}</td></tr>`).join('')}</tbody></table>
-    <div class="pdf-footer"><span>Technik: Daniel Novák</span><span>Všechna data jsou smyšlená · interaktivní demo</span><span>strana ${page+1}</span></div>
+const pdfDetailSamples = {
+  'inside.cleaning_record': 'Den úklidu: 15. 7. 2026',
+  'exterior.cultural_objects': 'Pamětní deska u hlavního vstupu, stav bez závady',
+  'waste.location_condition': 'Vnitroblok, vpravo od průjezdu',
+  'waste.flats': 'Počet: 4',
+  'waste.sorted': 'Počet: 3',
+  'waste.non_residential': 'Počet: 1',
+  'common.mailboxes': 'Kolik: 18',
+  'other.cleaning': 'Podlahy a zábradlí čisté, bez odloženého odpadu',
+  'other.notes': 'Pravidelná kontrola objektu dokončena.',
+  'meters.water_1': 'Číslo: V-10021 · stav: 01234 m³ · technická místnost',
+  'meters.water_2': 'Číslo: V-10022 · stav: 00987 m³ · suterén',
+  'meters.electricity_1': 'Číslo: E-20841 · stav: 05678 kWh · přízemí',
+  'meters.electricity_2': 'Číslo: E-20842 · stav: 03456 kWh · suterén',
+};
+
+function pdfAnswer(item) {
+  const answer = answerFor(item.key);
+  const selectedCode = answer.value || item.options[0][0];
+  const stateLabel = item.options.find(option => option[0] === selectedCode)?.[1] || selectedCode;
+  const detail = [];
+  if (answer.note) detail.push(answer.note);
+  else if (pdfDetailSamples[item.key]) detail.push(pdfDetailSamples[item.key]);
+  const photos = photosFor(item.key).sort((a,b) => a.sequence - b.sequence);
+  if (photos.length) detail.push(`Foto: ${photos.map(photo => photo.id).join(', ')}`);
+  return { stateLabel, detail: detail.join(' · ') };
+}
+
+function pdfTable(pageIndex) {
+  const sourcePage = pageIndex + 1;
+  const pageSections = sections.map(section => ({
+    ...section,
+    pageItems: allItems.filter(item => item.sectionKey === section.key && item.pdfPage === sourcePage),
+  })).filter(section => section.pageItems.length);
+  return `<div class="pdf-page" data-protocol-page="${sourcePage}">
+    <div class="pdf-header">
+      <div class="pdf-logo"><span class="pdf-logo-mark"><i></i><b></b></span><strong>SPRÁVA NEMOVITOSTÍ PRAHA 2</strong></div>
+      <div class="pdf-heading"><strong>Záznam z místního šetření ze dne:</strong><span>15. 7. 2026 09:41</span><span>adresa objektu: Ukázková 12, 130 00 Praha 3</span></div>
+      <div class="pdf-document-meta"><span>Číslo: DKO-DEMO-2026-001 · část ${sourcePage}/2</span><span>Technik: Daniel Novák</span></div>
+    </div>
+    <table class="pdf-table"><colgroup><col style="width:30%"><col style="width:34%"><col></colgroup><tbody>${pageSections.map(section => `<tr class="pdf-section-row"><th colspan="3">${section.title.toUpperCase()}</th></tr>${section.pageItems.map(item => { const answer=pdfAnswer(item); return `<tr data-pdf-row-key="${item.key}"><td><strong>${escapeHtml(item.label)}</strong></td><td>${escapeHtml(answer.stateLabel)}</td><td>${escapeHtml(answer.detail)}</td></tr>`; }).join('')}`).join('')}</tbody></table>
+    <div class="pdf-footer"><span>Jméno technika: Daniel Novák</span>${sourcePage === 2 ? '<span class="pdf-signature">Podpis technika: <i>Daniel Novák</i></span>' : '<span></span>'}<span>DKO-DEMO-2026-001 · šablona 2.0.0 · strana ${sourcePage}</span></div>
   </div>`;
 }
 
-function photoSheet() {
-  const photos = [...state.photos];
-  while (photos.length < 4) photos.push({ id: `F00${photos.length+1}`, src: photoLibrary[photos.length % photoLibrary.length].src, description: photoLibrary[photos.length % photoLibrary.length].title });
-  return `<div class="photo-sheet">${photos.slice(0,4).map(photo => `<figure><img src="${photo.markedSrc || photo.src}" alt="${photo.id}"><figcaption><strong>${photo.id}</strong> · ${escapeHtml(photo.description || 'Ukázková fotografie objektu')}</figcaption></figure>`).join('')}</div>`;
+function photoSheet(pageIndex, sheetCount) {
+  const photos = [...state.photos].sort((a,b) => a.sequence - b.sequence).slice(pageIndex * 4, pageIndex * 4 + 4);
+  return `<div class="photo-sheet" data-photo-sheet="${pageIndex + 1}">${photos.map(photo => {
+    const item = allItems.find(value => value.key === photo.itemKey);
+    return `<figure><div class="photo-sheet-card"><img src="${photo.markedSrc || photo.src}" alt="${photo.id}"><figcaption><div class="photo-sheet-title"><strong>${photo.id} · DKO-DEMO-2026-001</strong><span>list ${pageIndex + 1}/${sheetCount}</span></div><span>Ukázková 12, 130 00 Praha 3</span><span>15. 7. 2026 09:41 · ${escapeHtml(item?.label || photo.itemKey)}</span><span>Umístění: ${escapeHtml(photo.location || 'neuvedeno')}</span><span>Popis: ${escapeHtml(photo.description || 'bez popisu')}</span><span>Technik: Daniel Novák · Zdroj: ukázková fotografie</span></figcaption></div></figure>`;
+  }).join('')}<div class="photo-sheet-footer">DKO-DEMO-2026-001 · fotodokumentace · list ${pageIndex + 1}/${sheetCount}</div></div>`;
+}
+
+function currentPdfPageCount() {
+  const photoPages = Math.max(1, Math.ceil(state.photos.length / 4));
+  if (state.pdfDocument === 'protocol') return 2;
+  if (state.pdfDocument === 'photos') return photoPages;
+  return 2 + photoPages;
 }
 
 function renderPdf() {
-  const pageCount = 3;
-  return screen(`${appTopbar('Náhled PDF', state.pdfPage < 2 ? 'Protokol 2× A4 na šířku' : 'Fotodokumentace 4× A6', { back: 'history' })}
-    <div class="pdf-viewer">${state.pdfPage < 2 ? pdfTable(state.pdfPage) : photoSheet()}</div>
-    <div class="pdf-controls"><button class="button button--compact" data-action="pdf-prev" ${state.pdfPage === 0 ? 'disabled' : ''}>Předchozí</button><strong class="small">Strana ${state.pdfPage+1} / ${pageCount}</strong><button class="button button--compact" data-action="pdf-next" ${state.pdfPage === pageCount-1 ? 'disabled' : ''}>Další</button></div>`);
+  const photoPages = Math.max(1, Math.ceil(state.photos.length / 4));
+  const pageCount = currentPdfPageCount();
+  const isProtocol = state.pdfDocument === 'protocol' || (state.pdfDocument === 'complete' && state.pdfPage < 2);
+  const photoIndex = state.pdfDocument === 'photos' ? state.pdfPage : state.pdfPage - 2;
+  const content = isProtocol ? pdfTable(state.pdfPage) : photoSheet(photoIndex, photoPages);
+  const subtitle = isProtocol ? 'Protokol 2× A4 na šířku · všech 48 položek' : `Fotodokumentace ${photoPages}× A4 na výšku · 4× A6`;
+  const documentLabel = state.pdfDocument === 'protocol' ? 'Protokol' : state.pdfDocument === 'photos' ? 'Fotodokumentace' : 'Kompletní PDF';
+  return screen(`${appTopbar('Náhled PDF', subtitle, { back: 'history' })}
+    <div class="pdf-viewer">${content}</div>
+    <div class="pdf-controls"><button class="button button--compact" data-action="pdf-prev" ${state.pdfPage === 0 ? 'disabled' : ''}>Předchozí</button><strong class="small">${documentLabel} · strana ${state.pdfPage+1} / ${pageCount}</strong><button class="button button--compact" data-action="pdf-next" ${state.pdfPage === pageCount-1 ? 'disabled' : ''}>Další</button></div>`);
 }
 
 const adminSections = [
@@ -675,9 +733,10 @@ app.addEventListener('click', event => {
   if (target.dataset.action === 'signature-clear') { state.signature=false; return render(); }
   if (target.dataset.action === 'finalize') { state.final=true; state.signature=true; return navigate('history'); }
   if (target.dataset.action === 'create-revision') { state.final=false; state.signature=false; state.modal='toast:Nová revize byla vytvořena jako samostatná rozpracovaná kontrola.'; state.answers['other.notes']={value:'NOTE',note:'Revize původního protokolu.'}; return render(); }
-  if (target.dataset.pdf !== undefined) { state.pdfPage=Number(target.dataset.pdf); return navigate('pdf'); }
+  if (target.dataset.pdfDocument) { state.pdfDocument=target.dataset.pdfDocument; state.pdfPage=0; return navigate('pdf'); }
+  if (target.dataset.pdf !== undefined) { state.pdfDocument='complete'; state.pdfPage=Number(target.dataset.pdf); return navigate('pdf'); }
   if (target.dataset.action === 'pdf-prev') { state.pdfPage=Math.max(0,state.pdfPage-1); return render(); }
-  if (target.dataset.action === 'pdf-next') { state.pdfPage=Math.min(2,state.pdfPage+1); return render(); }
+  if (target.dataset.action === 'pdf-next') { state.pdfPage=Math.min(currentPdfPageCount()-1,state.pdfPage+1); return render(); }
   if (target.dataset.admin) { state.adminTab=target.dataset.admin; return render(); }
   if (target.dataset.action === 'integrity-run') { state.integrityRan=true; return render(); }
   if (target.dataset.demoToast) { state.modal=`toast:${target.dataset.demoToast}`; return render(); }
