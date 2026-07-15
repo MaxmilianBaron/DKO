@@ -2,6 +2,19 @@ const app = document.querySelector('#app');
 const query = new URLSearchParams(window.location.search);
 document.documentElement.classList.toggle('mobile-mode', query.get('mobile') === '1');
 
+app.addEventListener('error', event => {
+  const image = event.target;
+  if (!(image instanceof HTMLImageElement)) return;
+  const retries = Number(image.dataset.retryCount || 0);
+  if (retries >= 2) return;
+  image.dataset.retryCount = String(retries + 1);
+  window.setTimeout(() => {
+    const retryUrl = new URL(image.currentSrc || image.src, location.href);
+    retryUrl.searchParams.set('image-retry', String(retries + 1));
+    image.src = retryUrl.href;
+  }, 180 * (retries + 1));
+}, true);
+
 const sections = [
   { key: 'outside_information', title: 'Informace vně objektu', icon: 'info', items: [
     { key: 'outside.house_number', label: 'Tabulka s č. p.', options: [['YES','Ano','good'],['NO','Ne','defect']] },
@@ -278,14 +291,17 @@ function renderInspectionOverview() {
 function itemCard(item) {
   const answer = answerFor(item.key);
   const photos = photosFor(item.key);
-  return `<article class="item-card">
+  const primaryPhoto = photos[0];
+  const additionalPhotos = photos.slice(1);
+  return `<article class="item-card" data-item-key="${item.key}">
     <div class="row-between"><h3>${escapeHtml(item.label)}</h3>${answer.value ? `<span class="chip ${item.options.find(option => option[0] === answer.value)?.[2] === 'defect' ? 'chip--warn' : 'chip--good'}">${answer.value ? 'Hotovo' : ''}</span>` : ''}</div>
+    ${primaryPhoto ? `<button class="item-evidence" data-edit-photo="${primaryPhoto.id}" data-item-photo-key="${item.key}" data-photo-id="${primaryPhoto.id}"><img src="${primaryPhoto.markedSrc || primaryPhoto.src}" alt="${escapeHtml(`Fotografie ${primaryPhoto.id} – ${item.label}`)}"><span><strong>${primaryPhoto.id}</strong><small>Fotografie přiřazená k této položce</small></span></button>` : `<div class="item-evidence item-evidence--missing" data-missing-photo-key="${item.key}">Chybí fotografie k položce</div>`}
     <div class="field"><label>Stav</label><div class="choice-row">
       ${item.options.map(([value,label,tone]) => `<button class="choice is-${tone} ${answer.value === value ? 'is-selected' : ''}" data-answer="${item.key}" data-value="${value}">${label}</button>`).join('')}
     </div></div>
     <div class="field"><label>Poznámka</label><textarea class="textarea" data-note="${item.key}" placeholder="Doplňte zjištění…">${escapeHtml(answer.note)}</textarea></div>
-    <button class="button button--wide" data-photo-for="${item.key}">${icon('camera')} Přidat fotografii</button>
-    ${photos.length ? `<div><p class="small" style="font-weight:700;margin:0 0 7px">Uložené fotografie</p><div class="photo-row">${photos.map(photo => `<button class="photo-thumb" data-edit-photo="${photo.id}"><img src="${photo.markedSrc || photo.src}" alt="${photo.id}"><span>${photo.id}</span></button>`).join('')}</div></div>` : ''}
+    <button class="button button--wide" data-photo-for="${item.key}">${icon('camera')} Přidat další fotografii</button>
+    ${additionalPhotos.length ? `<div><p class="small" style="font-weight:700;margin:0 0 7px">Další uložené fotografie</p><div class="photo-row">${additionalPhotos.map(photo => `<button class="photo-thumb" data-edit-photo="${photo.id}"><img src="${photo.markedSrc || photo.src}" alt="${photo.id}"><span>${photo.id}</span></button>`).join('')}</div></div>` : ''}
   </article>`;
 }
 

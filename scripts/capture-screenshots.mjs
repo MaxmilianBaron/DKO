@@ -23,6 +23,7 @@ async function getJson(path){for(let i=0;i<50;i+=1){try{const response=await fet
 async function evaluate(cdp,expression){const response=await cdp.send('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true});return response.result?.value;}
 async function click(cdp,selector){const ok=await evaluate(cdp,`(()=>{const e=document.querySelector(${JSON.stringify(selector)});if(!e)return false;e.click();return true})()`);if(!ok)throw new Error(`Missing ${selector}`);await delay(220);}
 async function draw(cdp,selector){const r=await evaluate(cdp,`(()=>{const r=document.querySelector(${JSON.stringify(selector)})?.getBoundingClientRect();return r&&({x:r.left,y:r.top,w:r.width,h:r.height})})()`);if(!r)return;const points=[[.43,.27],[.58,.41],[.69,.29],[.72,.53]];await cdp.send('Input.dispatchMouseEvent',{type:'mousePressed',x:r.x+r.w*points[0][0],y:r.y+r.h*points[0][1],button:'left',clickCount:1});for(const [x,y] of points.slice(1))await cdp.send('Input.dispatchMouseEvent',{type:'mouseMoved',x:r.x+r.w*x,y:r.y+r.h*y,button:'left'});await cdp.send('Input.dispatchMouseEvent',{type:'mouseReleased',x:r.x+r.w*points.at(-1)[0],y:r.y+r.h*points.at(-1)[1],button:'left',clickCount:1});await delay(120);}
+async function waitForImages(cdp){await evaluate(cdp,`Promise.all(Array.from(document.images,async image=>{if(!image.complete)await new Promise(resolve=>{image.addEventListener('load',resolve,{once:true});image.addEventListener('error',resolve,{once:true});});if(image.decode)await image.decode().catch(()=>{});return image.naturalWidth;}))`);await delay(500);}
 async function capture(cdp,name){await evaluate(cdp,'window.scrollTo(0,0)');const shot=await cdp.send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false,fromSurface:true});await writeFile(join(output,`${name}.png`),Buffer.from(shot.data,'base64'));}
 
 async function main(){
@@ -34,6 +35,7 @@ async function main(){
     await capture(cdp,'01-login');
     await click(cdp,'[data-jump="work"]');await capture(cdp,'02-technician-work');
     await click(cdp,'[data-jump="inspection"]');await capture(cdp,'03-inspection-sections');
+    await click(cdp,'[data-section="outside_information"]');await waitForImages(cdp);await capture(cdp,'03b-item-photo-coverage');
     await click(cdp,'[data-jump="photo"]');await draw(cdp,'#markup-canvas');await capture(cdp,'04-photo-markup');
     await click(cdp,'[data-jump="history"]');await capture(cdp,'05-history');
     await click(cdp,'[data-pdf-document="protocol"]');await delay(500);await capture(cdp,'06-pdf-preview');

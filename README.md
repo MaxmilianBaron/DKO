@@ -2,24 +2,14 @@
 
 ## ▶ Spustit interaktivní preview aplikace
 
-[![Otevřít DKO v GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/MaxmilianBaron/DKO?quickstart=1)
+**[🖥️ Otevřít náhled pro PC](https://maxmilianbaron.github.io/DKO/)**
 
-**[Otevřít skutečné mobilní demo DKO](https://codespaces.new/MaxmilianBaron/DKO?quickstart=1)**
+**[📱 Otevřít mobilní náhled 1:1](https://maxmilianbaron.github.io/DKO/?mobile=1)**
 
-Protože je repozitář zatím privátní, preview se otevře přihlášeným uživatelům
-s přístupem k DKO v privátním GitHub Codespace. Po vytvoření prostředí se
-aplikace sama spustí a otevře v náhledu prohlížeče; není potřeba zadávat žádný
-příkaz.
+[![Deploy DKO demo to GitHub Pages](https://github.com/MaxmilianBaron/DKO/actions/workflows/pages.yml/badge.svg)](https://github.com/MaxmilianBaron/DKO/actions/workflows/pages.yml)
 
-## Stav GitHub Pages
-
-Demo je nyní součástí jediného repozitáře `MaxmilianBaron/DKO`, stejně jako u
-WMS. Současný tarif nepovoluje GitHub Pages z privátního repozitáře. Po
-budoucím zveřejnění bude veřejná adresa:
-
-```text
-https://maxmilianbaron.github.io/DKO/
-```
+Demo běží přímo z tohoto jediného veřejného repozitáře, stejně jako ukázka
+WMS. Není potřeba Codespaces, instalace ani přihlášení.
 
 Na telefonu se demo otevře přes celou obrazovku jako mobilní aplikace. Na
 počítači zůstane skutečné mobilní rozhraní uvnitř rámečku telefonu.
@@ -59,6 +49,10 @@ http://127.0.0.1:4174/
     <td><strong>Fotografie a červené označení závady</strong><br><img src="docs/screenshots/04-photo-markup.png" alt="Označení závady do fotografie" width="420"></td>
   </tr>
   <tr>
+    <td><strong>Fotografie F001–F048 přímo u každé položky</strong><br><img src="docs/screenshots/03b-item-photo-coverage.png" alt="Kontrolní položka s přímo přiřazenou fotografií" width="420"></td>
+    <td><strong>Kontaktní přehled všech 48 skutečných fotografií</strong><br><img src="docs/screenshots/photo-contact-sheet.jpg" alt="Všech 48 veřejně licencovaných fotografií" width="420"></td>
+  </tr>
+  <tr>
     <td><strong>Historie a auditovatelné dokumenty</strong><br><img src="docs/screenshots/05-history.png" alt="Historie protokolů" width="420"></td>
     <td><strong>První A4 protokolu – 28 položek</strong><br><img src="docs/screenshots/06-pdf-preview.png" alt="První strana PDF protokolu" width="420"></td>
   </tr>
@@ -83,7 +77,7 @@ http://127.0.0.1:4174/
 - přehled devíti sekcí a všech 48 aktivních kontrolních položek podle skutečné šablony
 - stavy v pořádku / závada, samostatné poznámky a fotografie
 - hromadné označení dosud nevyplněných položek v sekci
-- vlastní skutečná ilustrační fotografie u každé ze 48 kontrolních položek
+- vlastní skutečná ilustrační fotografie F001–F048 viditelná přímo u každé ze 48 kontrolních položek
 - výběr libovolného z 48 snímků v editoru fotografie
 - kreslení červeného označení do fotografie, krok zpět a vymazání
 - uložení označené pracovní kopie a zachování výchozího snímku
@@ -148,16 +142,12 @@ Všechna práva vyhrazena Aardvarkland Inc.
 
 ### ▶ Launch the interactive application preview
 
-[![Open DKO in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/MaxmilianBaron/DKO?quickstart=1)
+**[🖥️ Open the desktop preview](https://maxmilianbaron.github.io/DKO/)**
 
-The private preview is available to signed-in users who have access to DKO.
-The Codespace starts the static application automatically and opens its browser
-preview without requiring a command.
+**[📱 Open the 1:1 mobile preview](https://maxmilianbaron.github.io/DKO/?mobile=1)**
 
-The demo now lives in the single private `MaxmilianBaron/DKO` repository, using
-the same one-repository structure as the WMS showcase. GitHub Pages will become
-available at `https://maxmilianbaron.github.io/DKO/` after the repository is
-made public.
+The live demo is deployed from the single public `MaxmilianBaron/DKO`
+repository, using the same one-repository structure as the WMS showcase.
 
 On a phone, the demo fills the screen like the mobile application. On desktop,
 the same real mobile interface remains presented inside a phone frame.
@@ -166,8 +156,8 @@ Interactive showcase of DKO, an offline Android application for field building
 inspections, photo documentation, auditable revisions, and printable PDF
 reports.
 
-The repository is currently private. The showcase contains fictional data and
-openly licensed illustrative photographs, not customer evidence.
+The showcase contains fictional data and openly licensed illustrative
+photographs, not customer evidence.
 
 ### Local preview
 
@@ -183,7 +173,7 @@ Then open `http://127.0.0.1:4174/`.
 - due buildings and a recoverable in-progress inspection
 - nine inspection sections and all 48 active checklist items from the real template
 - good/defect answers, item notes, and multiple photos
-- one real, publicly licensed illustrative photo for every one of the 48 items
+- one real, publicly licensed F001–F048 photo shown directly on every one of the 48 item cards
 - real pointer or touch drawing with red defect markup
 - undo, clear, rotate, description, and saving a marked working copy
 - incomplete-item warning, electronic signature, and completion

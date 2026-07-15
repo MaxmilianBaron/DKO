@@ -111,6 +111,39 @@ async function main() {
     if (coverage.items !== 48 || coverage.photos !== 48 || coverage.itemKeys !== 48 || coverage.photoKeys !== 48 || coverage.sources !== 48 || coverage.uncovered.length) {
       throw new Error(`Expected exact 48-item real-photo coverage: ${JSON.stringify(coverage)}`);
     }
+    const visibleItemPhotos = await evaluate(cdp, `(() => {
+      const rows=[];
+      for(const section of sections){
+        state.currentSection=section.key;
+        state.route='section';
+        render();
+        for(const card of document.querySelectorAll('[data-item-key]')){
+          const photo=card.querySelector('[data-item-photo-key]');
+          const image=photo?.querySelector('img');
+          rows.push({
+            itemKey:card.dataset.itemKey,
+            photoKey:photo?.dataset.itemPhotoKey || null,
+            photoId:photo?.dataset.photoId || null,
+            src:image?.getAttribute('src') || null,
+            missing:Boolean(card.querySelector('[data-missing-photo-key]')),
+          });
+        }
+      }
+      state.route='inspection';
+      render();
+      return rows;
+    })()`);
+    const visibleItemPhotoSummary = {
+      rows: visibleItemPhotos.length,
+      itemKeys: new Set(visibleItemPhotos.map(row => row.itemKey)).size,
+      photoKeys: new Set(visibleItemPhotos.map(row => row.photoKey)).size,
+      photoIds: new Set(visibleItemPhotos.map(row => row.photoId)).size,
+      sources: new Set(visibleItemPhotos.map(row => row.src)).size,
+      invalid: visibleItemPhotos.filter(row => row.missing || !row.src || row.itemKey !== row.photoKey || !/^F\d{3}$/.test(row.photoId || '')),
+    };
+    if (visibleItemPhotoSummary.rows !== 48 || visibleItemPhotoSummary.itemKeys !== 48 || visibleItemPhotoSummary.photoKeys !== 48 || visibleItemPhotoSummary.photoIds !== 48 || visibleItemPhotoSummary.sources !== 48 || visibleItemPhotoSummary.invalid.length) {
+      throw new Error(`Every item card must visibly contain its own F001-F048 photo: ${JSON.stringify(visibleItemPhotoSummary)}`);
+    }
     await click(cdp, '[data-section="outside_inspection"]');
     await waitFor(cdp, `document.body.innerText.includes('Vchodové dveře')`, 'inspection items');
     await click(cdp, '[data-photo-for="exterior.entrance_doors"]');
@@ -118,11 +151,22 @@ async function main() {
     await click(cdp, '[data-action="choose-photo"]');
     await waitFor(cdp, `document.querySelectorAll('[data-library-photo]').length === 48`, '48-photo library');
     const libraryIssues = await evaluate(cdp, `(async () => {
-      const sources=Array.from(document.querySelectorAll('.gallery img'), image => image.src);
-      const results=await Promise.all(sources.map(async source => ({source,ok:(await fetch(source)).ok})));
-      return results.filter(result => !result.ok).map(result => result.source);
+      const sources=Array.from(document.querySelectorAll('.gallery img'),image=>image.src);
+      const results=await Promise.all(sources.map(async source=>{
+        let lastError;
+        for(let attempt=0;attempt<3;attempt+=1){
+          try{
+            const response=await fetch(source,{cache:'reload'});
+            const type=response.headers.get('content-type')||'';
+            if(!response.ok||!type.startsWith('image/'))throw new Error('HTTP '+response.status+' '+type);
+            return null;
+          }catch(error){lastError=error;await new Promise(resolve=>setTimeout(resolve,250));}
+        }
+        return {source,error:String(lastError)};
+      }));
+      return results.filter(Boolean);
     })()`);
-    if (libraryIssues.length) throw new Error(`Broken real-photo library assets: ${libraryIssues.join(', ')}`);
+    if (libraryIssues.length) throw new Error(`Broken real-photo library assets: ${JSON.stringify(libraryIssues)}`);
     await click(cdp, '[data-library-photo="13"]');
     await click(cdp, '[data-action="use-photo"]');
     await waitFor(cdp, `document.querySelector('#markup-canvas')`, 'markup editor');
@@ -134,7 +178,7 @@ async function main() {
     await delay(500);
     const photoSaveState = await evaluate(cdp, `({route:state.route,hasPending:Boolean(state.pendingPhoto),photos:state.photos.length})`);
     if (photoSaveState.route !== 'section') throw new Error(`Photo save did not navigate: ${JSON.stringify(photoSaveState)}`);
-    await waitFor(cdp, `document.body.innerText.includes('Uložené fotografie')`, 'saved photo in inspection');
+    await waitFor(cdp, `document.querySelector('[data-edit-photo="F049"]')`, 'saved additional photo in inspection');
     await click(cdp, '[data-route="inspection"]');
     await click(cdp, '[data-action="finish-check"]');
     await waitFor(cdp, `document.body.innerText.includes('položek není hotových')`, 'incomplete warning');
