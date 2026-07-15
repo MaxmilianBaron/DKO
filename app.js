@@ -2,58 +2,81 @@ const app = document.querySelector('#app');
 const query = new URLSearchParams(window.location.search);
 document.documentElement.classList.toggle('mobile-mode', query.get('mobile') === '1');
 
-const photoLibrary = [
-  { src: 'assets/photos/entrance-door.webp', title: 'Vstupní dveře' },
-  { src: 'assets/photos/hallway-light.webp', title: 'Osvětlení chodby' },
-  { src: 'assets/photos/building-facade.webp', title: 'Fasáda objektu' },
-  { src: 'assets/photos/waste-bins.webp', title: 'Stanoviště odpadu' },
-  { src: 'assets/photos/mailboxes.webp', title: 'Poštovní schránky' },
-  { src: 'assets/photos/courtyard.webp', title: 'Dvůr objektu' },
-  { src: 'assets/photos/inside-hallway.webp', title: 'Vnitřní chodba' },
-  { src: 'assets/photos/stairwell.webp', title: 'Schodiště' },
-  { src: 'assets/photos/water-meter.webp', title: 'Vodoměr' },
-];
-
 const sections = [
   { key: 'outside_information', title: 'Informace vně objektu', icon: 'info', items: [
     { key: 'outside.house_number', label: 'Tabulka s č. p.', options: [['YES','Ano','good'],['NO','Ne','defect']] },
     { key: 'outside.orientation_number', label: 'Tabulka s č. o.', options: [['YES','Ano','good'],['NO','Ne','defect']] },
+    { key: 'outside.snp2_board', label: 'Informační tabulka SNP2', options: [['YES','Ano','good'],['NO','Ne','defect']] },
+    { key: 'outside.cleaning_company_board', label: 'Informační tabulka úklidové firmy', options: [['YES','Ano','good'],['NO','Ne','defect']] },
   ] },
   { key: 'inside_information', title: 'Informace uvnitř objektu', icon: 'clipboard', items: [
-    { key: 'inside.sf_contacts', label: 'Kontakty správce', options: [['YES','Ano','good'],['NO','Ne','defect']] },
+    { key: 'inside.sf_contacts', label: 'Kontakty SF', options: [['YES','Ano','good'],['NO','Ne','defect']] },
+    { key: 'inside.sf_notice', label: 'Oznámení SF v nástěnce', options: [['YES','Ano','good'],['NO','Ne','defect']] },
+    { key: 'inside.boiler_contact', label: 'Kontakt – kotelna', options: [['YES','Ano','good'],['NO','Ne','defect'],['NOT_IN_HOUSE','Kotelna není v domě','neutral']] },
     { key: 'inside.cleaning_record', label: 'Záznam o úklidu', options: [['YES','Uveden','good'],['NO','Chybí','defect']] },
   ] },
   { key: 'outside_inspection', title: 'Venkovní obhlídka objektu', icon: 'building', items: [
-    { key: 'exterior.street_facade', label: 'Fasáda uliční', options: [['UNDAMAGED','Nepoškozená','good'],['DAMAGED','Poškozená','defect']] },
-    { key: 'exterior.entrance_doors', label: 'Vchodové dveře', options: [['FUNCTIONAL','Funkční','good'],['NON_FUNCTIONAL','Nefunkční','defect']] },
+    { key: 'exterior.street_facade', label: 'Fasáda uliční', options: [['UNDAMAGED','Nepoškozené','good'],['DAMAGED','Poškozené','defect']] },
+    { key: 'exterior.yard_facade', label: 'Fasáda dvorní', options: [['UNDAMAGED','Nepoškozené','good'],['DAMAGED','Poškozené','defect']] },
+    { key: 'exterior.cultural_objects', label: 'Kulturní předměty (pamětní desky, busty...)', options: [['RECORDED','Popsáno','good'],['MISSING','Doplnit','defect']] },
+    { key: 'exterior.street_windows', label: 'Okna uliční', options: [['GOOD','Dobrá','good'],['DAMAGED','Poškozená','defect']] },
+    { key: 'exterior.yard_windows', label: 'Okna dvorní', options: [['GOOD','Dobrá','good'],['DAMAGED','Poškozená','defect']] },
+    { key: 'exterior.entrance_doors', label: 'Vchodové dveře (zámek, zavírač, nátěr)', options: [['FUNCTIONAL','Funkční','good'],['NON_FUNCTIONAL','Nefunkční','defect']] },
+    { key: 'exterior.yard_doors', label: 'Dveře do dvora (zámek, zavírač, nátěr)', options: [['FUNCTIONAL','Funkční','good'],['NON_FUNCTIONAL','Nefunkční','defect']] },
+    { key: 'exterior.common_doors', label: 'Dveře do společných prostor', options: [['FUNCTIONAL','Funkční','good'],['NON_FUNCTIONAL','Nefunkční','defect']] },
+    { key: 'exterior.intercom', label: 'Zvonky, domácí telefony', options: [['FUNCTIONAL','Funkční','good'],['NON_FUNCTIONAL','Nefunkční','defect']] },
+    { key: 'exterior.roof', label: 'Střecha', options: [['FUNCTIONAL','Funkční','good'],['NON_FUNCTIONAL','Závada','defect']] },
+    { key: 'exterior.bird_protection', label: 'Ochrana proti ptactvu', options: [['FUNCTIONAL','Funkční','good'],['NON_FUNCTIONAL','Nefunkční','defect']] },
+    { key: 'exterior.drainage', label: 'Dešťové svody, gajgry, hromosvod', options: [['FUNCTIONAL','Funkční','good'],['NON_FUNCTIONAL','Nefunkční','defect']] },
   ] },
   { key: 'waste', title: 'Popelnice', icon: 'trash', items: [
     { key: 'waste.location_condition', label: 'Umístění popelnic / stav', options: [['OK','V pořádku','good'],['DEFECT','Závada','defect']] },
+    { key: 'waste.flats', label: 'Počet popelnic – byty', options: [['RECORDED','Zapsáno','good'],['MISSING','Doplnit','defect']] },
+    { key: 'waste.sorted', label: 'Počet nádob – tříděný odpad', options: [['RECORDED','Zapsáno','good'],['MISSING','Doplnit','defect']] },
+    { key: 'waste.non_residential', label: 'Počet popelnic – nebyty', options: [['RECORDED','Zapsáno','good'],['MISSING','Doplnit','defect']] },
     { key: 'waste.surroundings', label: 'Okolí popelnic', options: [['CLEAN','Čisté','good'],['WASTE','Odložený odpad','defect']] },
   ] },
   { key: 'common_areas', title: 'Společné prostory', icon: 'stairs', items: [
+    { key: 'common.mat', label: 'Rohožka', options: [['FUNCTIONAL','Funkční','good'],['DAMAGED','Poškozená','defect'],['NONE','Není','defect']] },
     { key: 'common.mailboxes', label: 'Poštovní schránky', options: [['FUNCTIONAL','Funkční','good'],['DAMAGED','Poškozené','defect']] },
+    { key: 'common.paint', label: 'Malba', options: [['PRESERVED','Zachovalá','good'],['DAMAGED','Poškozená','defect']] },
     { key: 'common.stairs', label: 'Schody', options: [['PRESERVED','Zachovalé','good'],['DAMAGED','Poškozené','defect']] },
+    { key: 'common.railings', label: 'Zábradlí', options: [['PRESERVED','Zachovalé','good'],['DAMAGED','Poškozené','defect']] },
+    { key: 'common.attic', label: 'Půda', options: [['MAINTAINED','Udržovaná','good'],['UNMAINTAINED','Neudržovaná','defect'],['WASTE','Odložený odpad','defect']] },
+    { key: 'common.cellars', label: 'Sklepy', options: [['MAINTAINED','Udržované','good'],['UNMAINTAINED','Neudržované','defect'],['WASTE','Odložený odpad','defect']] },
   ] },
   { key: 'yard', title: 'Dvůr / zahrádka', icon: 'leaf', items: [
     { key: 'yard.condition', label: 'Stav dvora', options: [['CLEAN','Čistý','good'],['UNMAINTAINED','Neudržovaný','defect']] },
-    { key: 'yard.technical', label: 'Technický stav povrchu', options: [['PRESERVED','Zachovalý','good'],['DAMAGED','Poškozený','defect']] },
+    { key: 'yard.technical', label: 'Technický stav (povrch, dlažba, vlhkost)', options: [['PRESERVED','Zachovalý','good'],['DAMAGED','Poškozený','defect']] },
+    { key: 'yard.greenery', label: 'Stav zeleně', options: [['MAINTAINED','Udržovaná','good'],['UNMAINTAINED','Neudržovaná','defect']] },
+    { key: 'yard.buildings', label: 'Stavby na dvoře (garáže, NB)', options: [['PRESERVED','Zachovalé','good'],['DAMAGED','Závada','defect']] },
   ] },
   { key: 'lighting', title: 'Osvětlení', icon: 'bulb', items: [
     { key: 'lighting.switches', label: 'Vypínače ve všech patrech', options: [['FUNCTIONAL','Funkční','good'],['DAMAGED','Poškozené','defect']] },
     { key: 'lighting.lights', label: 'Světla ve všech patrech', options: [['FUNCTIONAL','Všechna funkční','good'],['PARTIAL','Některá nesvítí','defect']] },
+    { key: 'lighting.covers', label: 'Kryty na světlech ve všech patrech', options: [['PRESENT','Jsou','good'],['MISSING','Nejsou','defect']] },
+    { key: 'lighting.cellar_a', label: 'Sklep – osvětlení I', options: [['FUNCTIONAL','Funkční','good'],['PARTIAL','Některá nesvítí','defect'],['NONE','Nefunkční komplet','defect']] },
+    { key: 'lighting.cellar_b', label: 'Sklep – osvětlení II', options: [['FUNCTIONAL','Funkční','good'],['PARTIAL','Některá nesvítí','defect'],['NONE','Nefunkční komplet','defect']] },
+    { key: 'lighting.distribution_boards', label: 'Elektrické rozvaděče, zámky', options: [['FUNCTIONAL','Funkční','good'],['CLOSED','Uzavřené','good'],['OPEN','Otevřené','defect']] },
   ] },
   { key: 'other', title: 'Ostatní', icon: 'note', items: [
-    { key: 'other.cleaning', label: 'Úklid společných prostor', options: [['OK','V pořádku','good'],['DEFECT','Závada','defect']] },
-    { key: 'other.notes', label: 'Další zjištění', options: [['NONE','Bez zjištění','good'],['NOTE','Zapsat zjištění','defect']] },
+    { key: 'other.cleaning', label: 'Úklid (zábradlí, prach, okna, odložený odpad, podlahy)', options: [['RECORDED','Popsáno','good'],['MISSING','Doplnit','defect']] },
+    { key: 'other.notes', label: 'Poznámky', options: [['RECORDED','Zapsáno','good'],['NONE','Bez poznámky','neutral']] },
   ] },
   { key: 'meters', title: 'Měřidla', icon: 'gauge', items: [
     { key: 'meters.water_1', label: 'Vodoměr 1', options: [['READ','Odečteno','good'],['MISSING','Nedostupné','defect']] },
+    { key: 'meters.water_2', label: 'Vodoměr 2', options: [['READ','Odečteno','good'],['MISSING','Nedostupné','defect']] },
     { key: 'meters.electricity_1', label: 'Elektroměr 1', options: [['READ','Odečteno','good'],['MISSING','Nedostupné','defect']] },
+    { key: 'meters.electricity_2', label: 'Elektroměr 2', options: [['READ','Odečteno','good'],['MISSING','Nedostupné','defect']] },
   ] },
 ];
 
 const allItems = sections.flatMap(section => section.items.map(item => ({ ...item, sectionKey: section.key })));
+const photoLibrary = allItems.map((item, index) => ({
+  itemKey: item.key,
+  title: item.label,
+  src: `assets/photos/items/item-${String(index + 1).padStart(2, '0')}.webp`,
+}));
 
 function initialState() {
   return {
@@ -71,17 +94,16 @@ function initialState() {
     pendingPhoto: null,
     loginRole: null,
     loginName: null,
-    photos: [
-      { id: 'F001', sequence: 1, itemKey: 'exterior.entrance_doors', src: photoLibrary[0].src, markedSrc: null, location: 'Hlavní vstup', description: 'Odřený nátěr u spodní hrany.', strokes: [] },
-      { id: 'F002', sequence: 2, itemKey: 'lighting.lights', src: photoLibrary[1].src, markedSrc: null, location: '2. patro', description: 'Jedno svítidlo nesvítí.', strokes: [] },
-      { id: 'F003', sequence: 3, itemKey: 'exterior.street_facade', src: photoLibrary[2].src, markedSrc: null, location: 'Uliční část', description: 'Celkový pohled na fasádu.', strokes: [] },
-      { id: 'F004', sequence: 4, itemKey: 'waste.location_condition', src: photoLibrary[3].src, markedSrc: null, location: 'Stanoviště nádob', description: 'Kontrola prostoru pro odpad.', strokes: [] },
-      { id: 'F005', sequence: 5, itemKey: 'common.mailboxes', src: photoLibrary[4].src, markedSrc: null, location: 'Přízemí', description: 'Přehled poštovních schránek.', strokes: [] },
-      { id: 'F006', sequence: 6, itemKey: 'yard.technical', src: photoLibrary[5].src, markedSrc: null, location: 'Vnitroblok', description: 'Technický stav dvora.', strokes: [] },
-      { id: 'F007', sequence: 7, itemKey: 'inside.cleaning_record', src: photoLibrary[6].src, markedSrc: null, location: 'Společná chodba', description: 'Stav společných vnitřních prostor.', strokes: [] },
-      { id: 'F008', sequence: 8, itemKey: 'other.cleaning', src: photoLibrary[7].src, markedSrc: null, location: 'Schodiště', description: 'Celkový stav schodiště.', strokes: [] },
-      { id: 'F009', sequence: 9, itemKey: 'meters.water_1', src: photoLibrary[8].src, markedSrc: null, location: 'Technická místnost', description: 'Doklad kontrolovaného měřidla.', strokes: [] },
-    ],
+    photos: photoLibrary.map((photo, index) => ({
+      id: `F${String(index + 1).padStart(3, '0')}`,
+      sequence: index + 1,
+      itemKey: photo.itemKey,
+      src: photo.src,
+      markedSrc: null,
+      location: sections.find(section => section.items.some(item => item.key === photo.itemKey))?.title || 'Kontrolovaný objekt',
+      description: `Ilustrační fotografie: ${photo.title}.`,
+      strokes: [],
+    })),
     answers: {
       'outside.house_number': { value: 'YES', note: 'Tabulka je čitelná.' },
       'outside.orientation_number': { value: 'YES', note: '' },
@@ -381,7 +403,7 @@ function adminTabContent(tab) {
     technicians: `<button class="button button--wide">${icon('plus')} Přidat technika</button><div class="admin-list"><button class="list-button"><span class="list-icon">${icon('badge')}</span><span><strong>Daniel Novák</strong><small>Aktivní účet · Technik</small></span></button><button class="list-button"><span class="list-icon">${icon('badge')}</span><span><strong>Petra Malá</strong><small>Aktivní účet · Technik</small></span></button></div><p class="body-copy">Účet se kvůli auditní historii nikdy nemaže, lze jej pouze deaktivovat.</p>`,
     buildings: `<button class="button button--wide">${icon('plus')} Přidat dům</button><div class="admin-list">${['Ukázková 12, Praha 3','Javorová 8, Praha 10','Parková 31, Praha 7'].map((title,index) => `<button class="list-button"><span class="list-icon">${icon('building')}</span><span><strong>${title}</strong><small>Interval ${index ? 30 : 14} dní · pouze fake data</small></span></button>`).join('')}</div>`,
     backup: `<div class="stack"><h2 class="title">Export a import dat</h2><p class="body-copy">Šifrovaný soubor zahrnuje databázi, originály i publikované fotografie, PDF a nastavení. V tomto demu se žádný soubor nevytváří.</p></div><div class="field"><label>Heslo zálohy</label><input class="input" type="password" value="demoheslo"></div><button class="button button--wide" data-demo-toast="Ukázkový export byl simulován">${icon('backup')} Exportovat data</button><button class="button button--wide button--outline" data-demo-toast="Ukázkový import byl simulován">Importovat a sloučit data</button>`,
-    integrity: `<div class="stack"><h2 class="title">Kontrola integrity</h2><p class="body-copy">Ověří databázi, existenci a kontrolní součty originálů fotografií i PDF.</p></div><button class="button button--wide" data-action="integrity-run">${icon('shield')} Spustit kontrolu</button>${state.integrityRan ? `<div class="integrity-result"><strong>Data jsou v pořádku</strong><div class="small">29 souborů · 9 fotografií · 3 PDF · demo úložiště</div></div>` : ''}`,
+    integrity: `<div class="stack"><h2 class="title">Kontrola integrity</h2><p class="body-copy">Ověří databázi, existenci a kontrolní součty originálů fotografií i PDF.</p></div><button class="button button--wide" data-action="integrity-run">${icon('shield')} Spustit kontrolu</button>${state.integrityRan ? `<div class="integrity-result"><strong>Data jsou v pořádku</strong><div class="small">68 souborů · 48 fotografií · 3 PDF · demo úložiště</div></div>` : ''}`,
     form: `<section class="hero-card stack"><strong>Seznam pro nové kontroly</strong><span class="small">Změny se použijí jen u nových kontrol. Rozpracované a hotové protokoly zachovávají svůj neměnný otisk.</span></section><div class="admin-list">${sections.slice(0,5).map(section => `<button class="list-button"><span class="list-icon">${icon(section.icon)}</span><span><strong>${section.title}</strong><small>${section.items.length} ukázkové položky · zobrazeno</small></span></button>`).join('')}</div>`,
     device: `<div class="stack"><h2 class="title">Telefon</h2><p class="body-copy">Stav zařízení a lokální diagnostika.</p></div><section class="outlined-card card-pad stack"><div class="row-between"><span class="muted">Úložiště</span><strong>V pořádku</strong></div><div class="row-between"><span class="muted">Fotoaparát</span><strong>Demo režim</strong></div><div class="row-between"><span class="muted">PDF engine</span><strong>OK</strong></div><div class="row-between"><span class="muted">Internetové oprávnění</span><strong>Není požadováno</strong></div></section>`,
     print: `<div class="stack"><h2 class="title">Tisk</h2><p class="body-copy">Protokol používá 2× A4 na šířku. Fotolist používá samostatné A4 na výšku se čtyřmi A6 oblastmi.</p></div><button class="button button--wide" data-demo-toast="Kalibrační stránka byla otevřena v ukázce">${icon('print')} Vytisknout kalibrační stránku</button>`,
@@ -412,7 +434,7 @@ function renderModal() {
       <div class="button-row"><button class="button button--outline" data-action="modal-close">Zrušit</button><button class="button" data-action="confirm-login">Přihlásit</button></div>
     </section></div>`;
   }
-  if (state.modal === 'photo-gallery') return `<div class="modal"><section class="dialog"><h2>Vyberte ukázkový snímek</h2><p>Jde o skutečné ilustrační fotografie s licencí CC0, nikoli o zákaznickou dokumentaci.</p><div class="gallery">${photoLibrary.map((photo,index) => `<button data-library-photo="${index}" class="${state.pendingPhoto?.libraryIndex === index ? 'is-selected' : ''}"><img src="${photo.src}" alt="${photo.title}"><span>${photo.title}</span></button>`).join('')}</div><a class="small primary-text" href="docs/demo-assets.md" target="_blank" rel="noopener">Zdroje a licence fotografií</a><button class="button button--wide button--outline" data-action="modal-close">Zavřít</button></section></div>`;
+  if (state.modal === 'photo-gallery') return `<div class="modal"><section class="dialog"><h2>Vyberte ukázkový snímek</h2><p>48 skutečných veřejně licencovaných fotografií, jedna pro každou aktivní položku. Nejde o zákaznickou dokumentaci.</p><div class="gallery">${photoLibrary.map((photo,index) => `<button data-library-photo="${index}" class="${state.pendingPhoto?.libraryIndex === index ? 'is-selected' : ''}"><img src="${photo.src}" alt="${photo.title}"><span>${photo.title}</span></button>`).join('')}</div><a class="small primary-text" href="docs/demo-assets.md" target="_blank" rel="noopener">Zdroje a licence fotografií</a><button class="button button--wide button--outline" data-action="modal-close">Zavřít</button></section></div>`;
   if (state.modal === 'incomplete') {
     const incomplete = allItems.length - totalProgress();
     return `<div class="modal"><section class="dialog"><h2>${incomplete} položek není hotových</h2><p>Kontrolu lze uzavřít, ale hotový protokol už nepůjde změnit bez nové revize.</p><div class="button-row"><button class="button button--outline" data-action="modal-close">Pokračovat v kontrole</button><button class="button" data-action="go-signature">Přejít k podpisu</button></div></section></div>`;
@@ -617,7 +639,12 @@ app.addEventListener('click', event => {
     section.items.forEach(item=>{ if(!answerFor(item.key).value) state.answers[item.key]={...answerFor(item.key),value:item.options.find(option=>option[2]==='good')?.[0] || item.options[0][0]}; });
     return render();
   }
-  if (target.dataset.photoFor) { state.selectedItem=target.dataset.photoFor; startPendingPhoto(); return navigate('photo-capture'); }
+  if (target.dataset.photoFor) {
+    state.selectedItem = target.dataset.photoFor;
+    const libraryIndex = Math.max(0, photoLibrary.findIndex(photo => photo.itemKey === state.selectedItem));
+    startPendingPhoto(photoLibrary[libraryIndex].src, libraryIndex);
+    return navigate('photo-capture');
+  }
   if (target.dataset.editPhoto) {
     const photo=state.photos.find(value=>value.id===target.dataset.editPhoto);
     if(photo){state.selectedItem=photo.itemKey;state.pendingPhoto={...photo,strokes:photo.strokes?.map(stroke=>stroke.map(point=>({...point})))||[],editingId:photo.id,libraryIndex:photoLibrary.findIndex(entry=>entry.src===photo.src),rotation:0};return navigate('photo-edit');}
@@ -664,7 +691,12 @@ document.addEventListener('click', event => {
   if (target.dataset.demoAction === 'theme') { state.theme=state.theme==='dark'?'light':'dark'; return render(); }
   if (target.dataset.jump) {
     const map={login:'login',work:'work',inspection:'inspection',photo:'photo-edit',history:'history',admin:'admin'};
-    if(target.dataset.jump==='photo'){state.role='technician';state.selectedItem='exterior.entrance_doors';const existing=state.photos[0];state.pendingPhoto={...existing,strokes:existing.strokes||[],editingId:existing.id,libraryIndex:0,rotation:0};}
+    if(target.dataset.jump==='photo'){
+      state.role='technician';
+      const existing=state.photos.find(photo=>photo.itemKey==='exterior.entrance_doors')||state.photos[0];
+      state.selectedItem=existing.itemKey;
+      state.pendingPhoto={...existing,strokes:existing.strokes||[],editingId:existing.id,libraryIndex:photoLibrary.findIndex(photo=>photo.itemKey===existing.itemKey),rotation:0};
+    }
     return navigate(map[target.dataset.jump]);
   }
 });
