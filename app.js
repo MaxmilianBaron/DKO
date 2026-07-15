@@ -1,52 +1,93 @@
 const app = document.querySelector('#app');
-
-const photoLibrary = [
-  { src: 'assets/photos/entrance-door.webp', title: 'Vstupní dveře' },
-  { src: 'assets/photos/hallway-light.webp', title: 'Osvětlení chodby' },
-  { src: 'assets/photos/mailboxes.webp', title: 'Poštovní schránky' },
-  { src: 'assets/photos/courtyard.webp', title: 'Dvůr objektu' },
-];
+const query = new URLSearchParams(window.location.search);
+document.documentElement.classList.toggle('mobile-mode', query.get('mobile') === '1');
 
 const sections = [
   { key: 'outside_information', title: 'Informace vně objektu', icon: 'info', items: [
     { key: 'outside.house_number', label: 'Tabulka s č. p.', options: [['YES','Ano','good'],['NO','Ne','defect']] },
     { key: 'outside.orientation_number', label: 'Tabulka s č. o.', options: [['YES','Ano','good'],['NO','Ne','defect']] },
+    { key: 'outside.snp2_board', label: 'Informační tabulka SNP2', options: [['YES','Ano','good'],['NO','Ne','defect']] },
+    { key: 'outside.cleaning_company_board', label: 'Informační tabulka úklidové firmy', options: [['YES','Ano','good'],['NO','Ne','defect']] },
   ] },
   { key: 'inside_information', title: 'Informace uvnitř objektu', icon: 'clipboard', items: [
-    { key: 'inside.sf_contacts', label: 'Kontakty správce', options: [['YES','Ano','good'],['NO','Ne','defect']] },
+    { key: 'inside.sf_contacts', label: 'Kontakty SF', options: [['YES','Ano','good'],['NO','Ne','defect']] },
+    { key: 'inside.sf_notice', label: 'Oznámení SF v nástěnce', options: [['YES','Ano','good'],['NO','Ne','defect']] },
+    { key: 'inside.boiler_contact', label: 'Kontakt – kotelna', options: [['YES','Ano','good'],['NO','Ne','defect'],['NOT_IN_HOUSE','Kotelna není v domě','neutral']] },
     { key: 'inside.cleaning_record', label: 'Záznam o úklidu', options: [['YES','Uveden','good'],['NO','Chybí','defect']] },
   ] },
   { key: 'outside_inspection', title: 'Venkovní obhlídka objektu', icon: 'building', items: [
-    { key: 'exterior.street_facade', label: 'Fasáda uliční', options: [['UNDAMAGED','Nepoškozená','good'],['DAMAGED','Poškozená','defect']] },
-    { key: 'exterior.entrance_doors', label: 'Vchodové dveře', options: [['FUNCTIONAL','Funkční','good'],['NON_FUNCTIONAL','Nefunkční','defect']] },
+    { key: 'exterior.street_facade', label: 'Fasáda uliční', options: [['UNDAMAGED','Nepoškozené','good'],['DAMAGED','Poškozené','defect']] },
+    { key: 'exterior.yard_facade', label: 'Fasáda dvorní', options: [['UNDAMAGED','Nepoškozené','good'],['DAMAGED','Poškozené','defect']] },
+    { key: 'exterior.cultural_objects', label: 'Kulturní předměty (pamětní desky, busty...)', options: [['RECORDED','Popsáno','good'],['MISSING','Doplnit','defect']] },
+    { key: 'exterior.street_windows', label: 'Okna uliční', options: [['GOOD','Dobrá','good'],['DAMAGED','Poškozená','defect']] },
+    { key: 'exterior.yard_windows', label: 'Okna dvorní', options: [['GOOD','Dobrá','good'],['DAMAGED','Poškozená','defect']] },
+    { key: 'exterior.entrance_doors', label: 'Vchodové dveře (zámek, zavírač, nátěr)', options: [['FUNCTIONAL','Funkční','good'],['NON_FUNCTIONAL','Nefunkční','defect']] },
+    { key: 'exterior.yard_doors', label: 'Dveře do dvora (zámek, zavírač, nátěr)', options: [['FUNCTIONAL','Funkční','good'],['NON_FUNCTIONAL','Nefunkční','defect']] },
+    { key: 'exterior.common_doors', label: 'Dveře do společných prostor', options: [['FUNCTIONAL','Funkční','good'],['NON_FUNCTIONAL','Nefunkční','defect']] },
+    { key: 'exterior.intercom', label: 'Zvonky, domácí telefony', options: [['FUNCTIONAL','Funkční','good'],['NON_FUNCTIONAL','Nefunkční','defect']] },
+    { key: 'exterior.roof', label: 'Střecha', options: [['FUNCTIONAL','Funkční','good'],['NON_FUNCTIONAL','Závada','defect']] },
+    { key: 'exterior.bird_protection', label: 'Ochrana proti ptactvu', options: [['FUNCTIONAL','Funkční','good'],['NON_FUNCTIONAL','Nefunkční','defect']] },
+    { key: 'exterior.drainage', label: 'Dešťové svody, gajgry, hromosvod', options: [['FUNCTIONAL','Funkční','good'],['NON_FUNCTIONAL','Nefunkční','defect']] },
   ] },
   { key: 'waste', title: 'Popelnice', icon: 'trash', items: [
     { key: 'waste.location_condition', label: 'Umístění popelnic / stav', options: [['OK','V pořádku','good'],['DEFECT','Závada','defect']] },
+    { key: 'waste.flats', label: 'Počet popelnic – byty', options: [['RECORDED','Zapsáno','good'],['MISSING','Doplnit','defect']] },
+    { key: 'waste.sorted', label: 'Počet nádob – tříděný odpad', options: [['RECORDED','Zapsáno','good'],['MISSING','Doplnit','defect']] },
+    { key: 'waste.non_residential', label: 'Počet popelnic – nebyty', options: [['RECORDED','Zapsáno','good'],['MISSING','Doplnit','defect']] },
     { key: 'waste.surroundings', label: 'Okolí popelnic', options: [['CLEAN','Čisté','good'],['WASTE','Odložený odpad','defect']] },
   ] },
   { key: 'common_areas', title: 'Společné prostory', icon: 'stairs', items: [
+    { key: 'common.mat', label: 'Rohožka', options: [['FUNCTIONAL','Funkční','good'],['DAMAGED','Poškozená','defect'],['NONE','Není','defect']] },
     { key: 'common.mailboxes', label: 'Poštovní schránky', options: [['FUNCTIONAL','Funkční','good'],['DAMAGED','Poškozené','defect']] },
+    { key: 'common.paint', label: 'Malba', options: [['PRESERVED','Zachovalá','good'],['DAMAGED','Poškozená','defect']] },
     { key: 'common.stairs', label: 'Schody', options: [['PRESERVED','Zachovalé','good'],['DAMAGED','Poškozené','defect']] },
+    { key: 'common.railings', label: 'Zábradlí', options: [['PRESERVED','Zachovalé','good'],['DAMAGED','Poškozené','defect']] },
+    { key: 'common.attic', label: 'Půda', options: [['MAINTAINED','Udržovaná','good'],['UNMAINTAINED','Neudržovaná','defect'],['WASTE','Odložený odpad','defect']] },
+    { key: 'common.cellars', label: 'Sklepy', options: [['MAINTAINED','Udržované','good'],['UNMAINTAINED','Neudržované','defect'],['WASTE','Odložený odpad','defect']] },
   ] },
   { key: 'yard', title: 'Dvůr / zahrádka', icon: 'leaf', items: [
     { key: 'yard.condition', label: 'Stav dvora', options: [['CLEAN','Čistý','good'],['UNMAINTAINED','Neudržovaný','defect']] },
-    { key: 'yard.technical', label: 'Technický stav povrchu', options: [['PRESERVED','Zachovalý','good'],['DAMAGED','Poškozený','defect']] },
+    { key: 'yard.technical', label: 'Technický stav (povrch, dlažba, vlhkost)', options: [['PRESERVED','Zachovalý','good'],['DAMAGED','Poškozený','defect']] },
+    { key: 'yard.greenery', label: 'Stav zeleně', options: [['MAINTAINED','Udržovaná','good'],['UNMAINTAINED','Neudržovaná','defect']] },
+    { key: 'yard.buildings', label: 'Stavby na dvoře (garáže, NB)', options: [['PRESERVED','Zachovalé','good'],['DAMAGED','Závada','defect']] },
   ] },
   { key: 'lighting', title: 'Osvětlení', icon: 'bulb', items: [
     { key: 'lighting.switches', label: 'Vypínače ve všech patrech', options: [['FUNCTIONAL','Funkční','good'],['DAMAGED','Poškozené','defect']] },
     { key: 'lighting.lights', label: 'Světla ve všech patrech', options: [['FUNCTIONAL','Všechna funkční','good'],['PARTIAL','Některá nesvítí','defect']] },
+    { key: 'lighting.covers', label: 'Kryty na světlech ve všech patrech', options: [['PRESENT','Jsou','good'],['MISSING','Nejsou','defect']] },
+    { key: 'lighting.cellar_a', label: 'Sklep – osvětlení I', options: [['FUNCTIONAL','Funkční','good'],['PARTIAL','Některá nesvítí','defect'],['NONE','Nefunkční komplet','defect']] },
+    { key: 'lighting.cellar_b', label: 'Sklep – osvětlení II', options: [['FUNCTIONAL','Funkční','good'],['PARTIAL','Některá nesvítí','defect'],['NONE','Nefunkční komplet','defect']] },
+    { key: 'lighting.distribution_boards', label: 'Elektrické rozvaděče, zámky', options: [['FUNCTIONAL','Funkční','good'],['CLOSED','Uzavřené','good'],['OPEN','Otevřené','defect']] },
   ] },
   { key: 'other', title: 'Ostatní', icon: 'note', items: [
-    { key: 'other.cleaning', label: 'Úklid společných prostor', options: [['OK','V pořádku','good'],['DEFECT','Závada','defect']] },
-    { key: 'other.notes', label: 'Další zjištění', options: [['NONE','Bez zjištění','good'],['NOTE','Zapsat zjištění','defect']] },
+    { key: 'other.cleaning', label: 'Úklid (zábradlí, prach, okna, odložený odpad, podlahy)', options: [['RECORDED','Popsáno','good'],['MISSING','Doplnit','defect']] },
+    { key: 'other.notes', label: 'Poznámky', options: [['RECORDED','Zapsáno','good'],['NONE','Bez poznámky','neutral']] },
   ] },
   { key: 'meters', title: 'Měřidla', icon: 'gauge', items: [
     { key: 'meters.water_1', label: 'Vodoměr 1', options: [['READ','Odečteno','good'],['MISSING','Nedostupné','defect']] },
+    { key: 'meters.water_2', label: 'Vodoměr 2', options: [['READ','Odečteno','good'],['MISSING','Nedostupné','defect']] },
     { key: 'meters.electricity_1', label: 'Elektroměr 1', options: [['READ','Odečteno','good'],['MISSING','Nedostupné','defect']] },
+    { key: 'meters.electricity_2', label: 'Elektroměr 2', options: [['READ','Odečteno','good'],['MISSING','Nedostupné','defect']] },
   ] },
 ];
 
-const allItems = sections.flatMap(section => section.items.map(item => ({ ...item, sectionKey: section.key })));
+const secondProtocolPageKeys = new Set([
+  'common.stairs', 'common.railings', 'common.attic', 'common.cellars',
+  'yard.condition', 'yard.technical', 'yard.greenery', 'yard.buildings',
+  'lighting.switches', 'lighting.lights', 'lighting.covers', 'lighting.cellar_a', 'lighting.cellar_b', 'lighting.distribution_boards',
+  'other.cleaning', 'other.notes',
+  'meters.water_1', 'meters.water_2', 'meters.electricity_1', 'meters.electricity_2',
+]);
+const allItems = sections.flatMap(section => section.items.map(item => ({
+  ...item,
+  sectionKey: section.key,
+  pdfPage: secondProtocolPageKeys.has(item.key) ? 2 : 1,
+})));
+const photoLibrary = allItems.map((item, index) => ({
+  itemKey: item.key,
+  title: item.label,
+  src: `assets/photos/items/item-${String(index + 1).padStart(2, '0')}.webp`,
+}));
 
 function initialState() {
   return {
@@ -58,14 +99,23 @@ function initialState() {
     currentSection: 'outside_information',
     selectedItem: 'exterior.entrance_doors',
     pdfPage: 0,
+    pdfDocument: 'complete',
     adminTab: null,
     final: true,
     signature: true,
     pendingPhoto: null,
-    photos: [
-      { id: 'F001', sequence: 1, itemKey: 'exterior.entrance_doors', src: photoLibrary[0].src, markedSrc: null, location: 'Hlavní vstup', description: 'Odřený nátěr u spodní hrany.', strokes: [] },
-      { id: 'F002', sequence: 2, itemKey: 'lighting.lights', src: photoLibrary[1].src, markedSrc: null, location: '2. patro', description: 'Jedno svítidlo nesvítí.', strokes: [] },
-    ],
+    loginRole: null,
+    loginName: null,
+    photos: photoLibrary.map((photo, index) => ({
+      id: `F${String(index + 1).padStart(3, '0')}`,
+      sequence: index + 1,
+      itemKey: photo.itemKey,
+      src: photo.src,
+      markedSrc: null,
+      location: sections.find(section => section.items.some(item => item.key === photo.itemKey))?.title || 'Kontrolovaný objekt',
+      description: `Ilustrační fotografie: ${photo.title}.`,
+      strokes: [],
+    })),
     answers: {
       'outside.house_number': { value: 'YES', note: 'Tabulka je čitelná.' },
       'outside.orientation_number': { value: 'YES', note: '' },
@@ -179,8 +229,8 @@ function renderLogin() {
         <p class="body-copy" style="color:inherit">Data zůstávají pouze v tomto telefonu. Vyberte svůj účet a zadejte heslo.</p>
       </section>
       <h2 class="section-title">Technici</h2>
-      <button class="account-card" data-action="login-technician"><span class="list-icon">${icon('badge')}</span><span><strong>Daniel Novák</strong><small>Technik · demo účet</small></span></button>
-      <button class="account-card" data-action="login-technician"><span class="list-icon">${icon('badge')}</span><span><strong>Petra Malá</strong><small>Technik · demo účet</small></span></button>
+      <button class="account-card" data-action="login-technician" data-login-name="Daniel Novák"><span class="list-icon">${icon('badge')}</span><span><strong>Daniel Novák</strong><small>Technik · demo účet</small></span></button>
+      <button class="account-card" data-action="login-technician" data-login-name="Petra Malá"><span class="list-icon">${icon('badge')}</span><span><strong>Petra Malá</strong><small>Technik · demo účet</small></span></button>
     </div></div>
     <div class="bottom-action"><button class="button button--wide button--outline" data-action="login-admin">${icon('admin')} Přihlásit jako Admin</button></div>`);
 }
@@ -293,9 +343,10 @@ function renderSignature() {
 }
 
 function historyDocuments() {
-  return `<div class="document-row"><button class="button button--text" data-pdf="0">Protokol</button><button class="icon-button" data-demo-toast="PDF bylo uloženo pouze v ukázce">${icon('download')}</button><button class="icon-button" data-demo-toast="Otevřen tiskový dialog ukázky">${icon('print')}</button><button class="icon-button" data-demo-toast="Sdílení je v demu vypnuté">${icon('share')}</button></div>
-    <div class="document-row"><button class="button button--text" data-pdf="2">Fotodokumentace 4× A6</button><button class="icon-button" data-demo-toast="PDF bylo uloženo pouze v ukázce">${icon('download')}</button><button class="icon-button" data-demo-toast="Otevřen tiskový dialog ukázky">${icon('print')}</button><button class="icon-button" data-demo-toast="Sdílení je v demu vypnuté">${icon('share')}</button></div>
-    <div class="document-row"><button class="button button--text" data-pdf="0">Kompletní PDF</button><button class="icon-button" data-demo-toast="PDF bylo uloženo pouze v ukázce">${icon('download')}</button><button class="icon-button" data-demo-toast="Otevřen tiskový dialog ukázky">${icon('print')}</button><button class="icon-button" data-demo-toast="Sdílení je v demu vypnuté">${icon('share')}</button></div>`;
+  const photoPages = Math.max(1, Math.ceil(state.photos.length / 4));
+  return `<div class="document-row"><button class="button button--text" data-pdf-document="protocol" data-pdf="0">Protokol · 2 strany A4</button><button class="icon-button" data-demo-toast="PDF bylo uloženo pouze v ukázce">${icon('download')}</button><button class="icon-button" data-demo-toast="Otevřen tiskový dialog ukázky">${icon('print')}</button><button class="icon-button" data-demo-toast="Sdílení je v demu vypnuté">${icon('share')}</button></div>
+    <div class="document-row"><button class="button button--text" data-pdf-document="photos" data-pdf="0">Fotodokumentace · ${photoPages}× A4 / 4× A6</button><button class="icon-button" data-demo-toast="PDF bylo uloženo pouze v ukázce">${icon('download')}</button><button class="icon-button" data-demo-toast="Otevřen tiskový dialog ukázky">${icon('print')}</button><button class="icon-button" data-demo-toast="Sdílení je v demu vypnuté">${icon('share')}</button></div>
+    <div class="document-row"><button class="button button--text" data-pdf-document="complete" data-pdf="0">Kompletní PDF · ${2 + photoPages} stran</button><button class="icon-button" data-demo-toast="PDF bylo uloženo pouze v ukázce">${icon('download')}</button><button class="icon-button" data-demo-toast="Otevřen tiskový dialog ukázky">${icon('print')}</button><button class="icon-button" data-demo-toast="Sdílení je v demu vypnuté">${icon('share')}</button></div>`;
 }
 
 function renderHistory() {
@@ -317,32 +368,77 @@ function renderHistory() {
     </div></div>`, { drawer: true });
 }
 
-function pdfTable(page) {
-  const rows1 = [
-    ['INFORMACE VNĚ OBJEKTU','',''],['Tabulka s č. p.','Ano','Tabulka je čitelná'],['Tabulka s č. o.','Ano',''],['INFORMACE UVNITŘ OBJEKTU','',''],['Kontakty správce','Ano',''],['Záznam o úklidu','Uveden','Poslední záznam dnes'],['VENKOVNÍ OBHLÍDKA OBJEKTU','',''],['Fasáda uliční','Nepoškozená',''],['Vchodové dveře','Nefunkční','Zavírač nedovírá · Foto F001'],['POPELNICE','',''],['Umístění popelnic / stav','V pořádku',''],['Okolí popelnic','Čisté',''],['SPOLEČNÉ PROSTORY','',''],['Poštovní schránky','Poškozené','Dvířka schránky č. 8 nedrží'],['Schody','Zachovalé',''],
-  ];
-  const rows2 = [
-    ['DVŮR / ZAHRÁDKA','',''],['Stav dvora','Čistý','Foto F004'],['Technický stav povrchu','Zachovalý',''],['OSVĚTLENÍ','',''],['Vypínače ve všech patrech','Funkční',''],['Světla ve všech patrech','Některá nesvítí','2. patro · Foto F002'],['OSTATNÍ','',''],['Úklid společných prostor','V pořádku',''],['Další zjištění','Bez zjištění',''],['MĚŘIDLA','',''],['Vodoměr 1','Odečteno','Ukázkový stav 01234'],['Elektroměr 1','Odečteno','Ukázkový stav 05678'],
-  ];
-  const rows = page === 0 ? rows1 : rows2;
-  return `<div class="pdf-page">
-    <div class="pdf-header"><div class="pdf-logo"><span></span> DEMO SPRÁVA OBJEKTŮ</div><strong>Záznam z místního šetření</strong><div>Číslo: DKO-DEMO-2026-001 · část ${page+1}/2</div></div>
-    <table class="pdf-table"><colgroup><col style="width:34%"><col style="width:25%"><col></colgroup><tbody>${rows.map(row => row[1] === '' ? `<tr><th colspan="3">${row[0]}</th></tr>` : `<tr><td><strong>${row[0]}</strong></td><td>${row[1]}</td><td>${row[2]}</td></tr>`).join('')}</tbody></table>
-    <div class="pdf-footer"><span>Technik: Daniel Novák</span><span>Všechna data jsou smyšlená · interaktivní demo</span><span>strana ${page+1}</span></div>
+const pdfDetailSamples = {
+  'inside.cleaning_record': 'Den úklidu: 15. 7. 2026',
+  'exterior.cultural_objects': 'Pamětní deska u hlavního vstupu, stav bez závady',
+  'waste.location_condition': 'Vnitroblok, vpravo od průjezdu',
+  'waste.flats': 'Počet: 4',
+  'waste.sorted': 'Počet: 3',
+  'waste.non_residential': 'Počet: 1',
+  'common.mailboxes': 'Kolik: 18',
+  'other.cleaning': 'Podlahy a zábradlí čisté, bez odloženého odpadu',
+  'other.notes': 'Pravidelná kontrola objektu dokončena.',
+  'meters.water_1': 'Číslo: V-10021 · stav: 01234 m³ · technická místnost',
+  'meters.water_2': 'Číslo: V-10022 · stav: 00987 m³ · suterén',
+  'meters.electricity_1': 'Číslo: E-20841 · stav: 05678 kWh · přízemí',
+  'meters.electricity_2': 'Číslo: E-20842 · stav: 03456 kWh · suterén',
+};
+
+function pdfAnswer(item) {
+  const answer = answerFor(item.key);
+  const selectedCode = answer.value || item.options[0][0];
+  const stateLabel = item.options.find(option => option[0] === selectedCode)?.[1] || selectedCode;
+  const detail = [];
+  if (answer.note) detail.push(answer.note);
+  else if (pdfDetailSamples[item.key]) detail.push(pdfDetailSamples[item.key]);
+  const photos = photosFor(item.key).sort((a,b) => a.sequence - b.sequence);
+  if (photos.length) detail.push(`Foto: ${photos.map(photo => photo.id).join(', ')}`);
+  return { stateLabel, detail: detail.join(' · ') };
+}
+
+function pdfTable(pageIndex) {
+  const sourcePage = pageIndex + 1;
+  const pageSections = sections.map(section => ({
+    ...section,
+    pageItems: allItems.filter(item => item.sectionKey === section.key && item.pdfPage === sourcePage),
+  })).filter(section => section.pageItems.length);
+  return `<div class="pdf-page" data-protocol-page="${sourcePage}">
+    <div class="pdf-header">
+      <div class="pdf-logo"><span class="pdf-logo-mark"><i></i><b></b></span><strong>SPRÁVA NEMOVITOSTÍ PRAHA 2</strong></div>
+      <div class="pdf-heading"><strong>Záznam z místního šetření ze dne:</strong><span>15. 7. 2026 09:41</span><span>adresa objektu: Ukázková 12, 130 00 Praha 3</span></div>
+      <div class="pdf-document-meta"><span>Číslo: DKO-DEMO-2026-001 · část ${sourcePage}/2</span><span>Technik: Daniel Novák</span></div>
+    </div>
+    <table class="pdf-table"><colgroup><col style="width:30%"><col style="width:34%"><col></colgroup><tbody>${pageSections.map(section => `<tr class="pdf-section-row"><th colspan="3">${section.title.toUpperCase()}</th></tr>${section.pageItems.map(item => { const answer=pdfAnswer(item); return `<tr data-pdf-row-key="${item.key}"><td><strong>${escapeHtml(item.label)}</strong></td><td>${escapeHtml(answer.stateLabel)}</td><td>${escapeHtml(answer.detail)}</td></tr>`; }).join('')}`).join('')}</tbody></table>
+    <div class="pdf-footer"><span>Jméno technika: Daniel Novák</span>${sourcePage === 2 ? '<span class="pdf-signature">Podpis technika: <i>Daniel Novák</i></span>' : '<span></span>'}<span>DKO-DEMO-2026-001 · šablona 2.0.0 · strana ${sourcePage}</span></div>
   </div>`;
 }
 
-function photoSheet() {
-  const photos = [...state.photos];
-  while (photos.length < 4) photos.push({ id: `F00${photos.length+1}`, src: photoLibrary[photos.length % photoLibrary.length].src, description: photoLibrary[photos.length % photoLibrary.length].title });
-  return `<div class="photo-sheet">${photos.slice(0,4).map(photo => `<figure><img src="${photo.markedSrc || photo.src}" alt="${photo.id}"><figcaption><strong>${photo.id}</strong> · ${escapeHtml(photo.description || 'Ukázková fotografie objektu')}</figcaption></figure>`).join('')}</div>`;
+function photoSheet(pageIndex, sheetCount) {
+  const photos = [...state.photos].sort((a,b) => a.sequence - b.sequence).slice(pageIndex * 4, pageIndex * 4 + 4);
+  return `<div class="photo-sheet" data-photo-sheet="${pageIndex + 1}">${photos.map(photo => {
+    const item = allItems.find(value => value.key === photo.itemKey);
+    return `<figure><div class="photo-sheet-card"><img src="${photo.markedSrc || photo.src}" alt="${photo.id}"><figcaption><div class="photo-sheet-title"><strong>${photo.id} · DKO-DEMO-2026-001</strong><span>list ${pageIndex + 1}/${sheetCount}</span></div><span>Ukázková 12, 130 00 Praha 3</span><span>15. 7. 2026 09:41 · ${escapeHtml(item?.label || photo.itemKey)}</span><span>Umístění: ${escapeHtml(photo.location || 'neuvedeno')}</span><span>Popis: ${escapeHtml(photo.description || 'bez popisu')}</span><span>Technik: Daniel Novák · Zdroj: ukázková fotografie</span></figcaption></div></figure>`;
+  }).join('')}<div class="photo-sheet-footer">DKO-DEMO-2026-001 · fotodokumentace · list ${pageIndex + 1}/${sheetCount}</div></div>`;
+}
+
+function currentPdfPageCount() {
+  const photoPages = Math.max(1, Math.ceil(state.photos.length / 4));
+  if (state.pdfDocument === 'protocol') return 2;
+  if (state.pdfDocument === 'photos') return photoPages;
+  return 2 + photoPages;
 }
 
 function renderPdf() {
-  const pageCount = 3;
-  return screen(`${appTopbar('Náhled PDF', state.pdfPage < 2 ? 'Protokol 2× A4 na šířku' : 'Fotodokumentace 4× A6', { back: 'history' })}
-    <div class="pdf-viewer">${state.pdfPage < 2 ? pdfTable(state.pdfPage) : photoSheet()}</div>
-    <div class="pdf-controls"><button class="button button--compact" data-action="pdf-prev" ${state.pdfPage === 0 ? 'disabled' : ''}>Předchozí</button><strong class="small">Strana ${state.pdfPage+1} / ${pageCount}</strong><button class="button button--compact" data-action="pdf-next" ${state.pdfPage === pageCount-1 ? 'disabled' : ''}>Další</button></div>`);
+  const photoPages = Math.max(1, Math.ceil(state.photos.length / 4));
+  const pageCount = currentPdfPageCount();
+  const isProtocol = state.pdfDocument === 'protocol' || (state.pdfDocument === 'complete' && state.pdfPage < 2);
+  const photoIndex = state.pdfDocument === 'photos' ? state.pdfPage : state.pdfPage - 2;
+  const content = isProtocol ? pdfTable(state.pdfPage) : photoSheet(photoIndex, photoPages);
+  const subtitle = isProtocol ? 'Protokol 2× A4 na šířku · všech 48 položek' : `Fotodokumentace ${photoPages}× A4 na výšku · 4× A6`;
+  const documentLabel = state.pdfDocument === 'protocol' ? 'Protokol' : state.pdfDocument === 'photos' ? 'Fotodokumentace' : 'Kompletní PDF';
+  return screen(`${appTopbar('Náhled PDF', subtitle, { back: 'history' })}
+    <div class="pdf-viewer">${content}</div>
+    <div class="pdf-controls"><button class="button button--compact" data-action="pdf-prev" ${state.pdfPage === 0 ? 'disabled' : ''}>Předchozí</button><strong class="small">${documentLabel} · strana ${state.pdfPage+1} / ${pageCount}</strong><button class="button button--compact" data-action="pdf-next" ${state.pdfPage === pageCount-1 ? 'disabled' : ''}>Další</button></div>`);
 }
 
 const adminSections = [
@@ -365,7 +461,7 @@ function adminTabContent(tab) {
     technicians: `<button class="button button--wide">${icon('plus')} Přidat technika</button><div class="admin-list"><button class="list-button"><span class="list-icon">${icon('badge')}</span><span><strong>Daniel Novák</strong><small>Aktivní účet · Technik</small></span></button><button class="list-button"><span class="list-icon">${icon('badge')}</span><span><strong>Petra Malá</strong><small>Aktivní účet · Technik</small></span></button></div><p class="body-copy">Účet se kvůli auditní historii nikdy nemaže, lze jej pouze deaktivovat.</p>`,
     buildings: `<button class="button button--wide">${icon('plus')} Přidat dům</button><div class="admin-list">${['Ukázková 12, Praha 3','Javorová 8, Praha 10','Parková 31, Praha 7'].map((title,index) => `<button class="list-button"><span class="list-icon">${icon('building')}</span><span><strong>${title}</strong><small>Interval ${index ? 30 : 14} dní · pouze fake data</small></span></button>`).join('')}</div>`,
     backup: `<div class="stack"><h2 class="title">Export a import dat</h2><p class="body-copy">Šifrovaný soubor zahrnuje databázi, originály i publikované fotografie, PDF a nastavení. V tomto demu se žádný soubor nevytváří.</p></div><div class="field"><label>Heslo zálohy</label><input class="input" type="password" value="demoheslo"></div><button class="button button--wide" data-demo-toast="Ukázkový export byl simulován">${icon('backup')} Exportovat data</button><button class="button button--wide button--outline" data-demo-toast="Ukázkový import byl simulován">Importovat a sloučit data</button>`,
-    integrity: `<div class="stack"><h2 class="title">Kontrola integrity</h2><p class="body-copy">Ověří databázi, existenci a kontrolní součty originálů fotografií i PDF.</p></div><button class="button button--wide" data-action="integrity-run">${icon('shield')} Spustit kontrolu</button>${state.integrityRan ? `<div class="integrity-result"><strong>Data jsou v pořádku</strong><div class="small">24 souborů · 4 fotografie · 3 PDF · demo úložiště</div></div>` : ''}`,
+    integrity: `<div class="stack"><h2 class="title">Kontrola integrity</h2><p class="body-copy">Ověří databázi, existenci a kontrolní součty originálů fotografií i PDF.</p></div><button class="button button--wide" data-action="integrity-run">${icon('shield')} Spustit kontrolu</button>${state.integrityRan ? `<div class="integrity-result"><strong>Data jsou v pořádku</strong><div class="small">68 souborů · 48 fotografií · 3 PDF · demo úložiště</div></div>` : ''}`,
     form: `<section class="hero-card stack"><strong>Seznam pro nové kontroly</strong><span class="small">Změny se použijí jen u nových kontrol. Rozpracované a hotové protokoly zachovávají svůj neměnný otisk.</span></section><div class="admin-list">${sections.slice(0,5).map(section => `<button class="list-button"><span class="list-icon">${icon(section.icon)}</span><span><strong>${section.title}</strong><small>${section.items.length} ukázkové položky · zobrazeno</small></span></button>`).join('')}</div>`,
     device: `<div class="stack"><h2 class="title">Telefon</h2><p class="body-copy">Stav zařízení a lokální diagnostika.</p></div><section class="outlined-card card-pad stack"><div class="row-between"><span class="muted">Úložiště</span><strong>V pořádku</strong></div><div class="row-between"><span class="muted">Fotoaparát</span><strong>Demo režim</strong></div><div class="row-between"><span class="muted">PDF engine</span><strong>OK</strong></div><div class="row-between"><span class="muted">Internetové oprávnění</span><strong>Není požadováno</strong></div></section>`,
     print: `<div class="stack"><h2 class="title">Tisk</h2><p class="body-copy">Protokol používá 2× A4 na šířku. Fotolist používá samostatné A4 na výšku se čtyřmi A6 oblastmi.</p></div><button class="button button--wide" data-demo-toast="Kalibrační stránka byla otevřena v ukázce">${icon('print')} Vytisknout kalibrační stránku</button>`,
@@ -386,7 +482,17 @@ function renderSettings() {
 
 function renderModal() {
   if (!state.modal) return '';
-  if (state.modal === 'photo-gallery') return `<div class="modal"><section class="dialog"><h2>Vyberte ukázkový snímek</h2><p>Všechny fotografie byly vytvořené pouze pro toto demo.</p><div class="gallery">${photoLibrary.map((photo,index) => `<button data-library-photo="${index}" class="${state.pendingPhoto?.libraryIndex === index ? 'is-selected' : ''}"><img src="${photo.src}" alt="${photo.title}"><span>${photo.title}</span></button>`).join('')}</div><button class="button button--wide button--outline" data-action="modal-close">Zavřít</button></section></div>`;
+  if (state.modal === 'login') {
+    const admin = state.loginRole === 'admin';
+    return `<div class="modal"><section class="dialog" role="dialog" aria-modal="true" aria-labelledby="login-dialog-title">
+      <div class="row" style="justify-content:center;color:var(--primary)">${icon(admin ? 'admin' : 'badge')}</div>
+      <h2 id="login-dialog-title">${admin ? 'Přihlášení Admin' : escapeHtml(state.loginName || 'Technik')}</h2>
+      <p>V ostré aplikaci zadejte své heslo. V této ukázce použijte předvyplněné heslo <strong>demo</strong>.</p>
+      <div class="field"><label>Heslo</label><input id="demo-login-password" class="input" type="password" value="demo" autocomplete="off"></div>
+      <div class="button-row"><button class="button button--outline" data-action="modal-close">Zrušit</button><button class="button" data-action="confirm-login">Přihlásit</button></div>
+    </section></div>`;
+  }
+  if (state.modal === 'photo-gallery') return `<div class="modal"><section class="dialog"><h2>Vyberte ukázkový snímek</h2><p>48 skutečných veřejně licencovaných fotografií, jedna pro každou aktivní položku. Nejde o zákaznickou dokumentaci.</p><div class="gallery">${photoLibrary.map((photo,index) => `<button data-library-photo="${index}" class="${state.pendingPhoto?.libraryIndex === index ? 'is-selected' : ''}"><img src="${photo.src}" alt="${photo.title}"><span>${photo.title}</span></button>`).join('')}</div><a class="small primary-text" href="docs/demo-assets.md" target="_blank" rel="noopener">Zdroje a licence fotografií</a><button class="button button--wide button--outline" data-action="modal-close">Zavřít</button></section></div>`;
   if (state.modal === 'incomplete') {
     const incomplete = allItems.length - totalProgress();
     return `<div class="modal"><section class="dialog"><h2>${incomplete} položek není hotových</h2><p>Kontrolu lze uzavřít, ale hotový protokol už nepůjde změnit bez nové revize.</p><div class="button-row"><button class="button button--outline" data-action="modal-close">Pokračovat v kontrole</button><button class="button" data-action="go-signature">Přejít k podpisu</button></div></section></div>`;
@@ -573,8 +679,16 @@ app.addEventListener('click', event => {
   if (target.dataset.action === 'drawer-open') { state.drawer=true; return render(); }
   if (target.dataset.action === 'drawer-close') { state.drawer=false; return render(); }
   if (target.dataset.action === 'logout') { state.role=null; state.route='login'; state.drawer=false; return render(); }
-  if (target.dataset.action === 'login-technician') { state.role='technician'; return navigate('work'); }
-  if (target.dataset.action === 'login-admin') { state.role='admin'; return navigate('admin'); }
+  if (target.dataset.action === 'login-technician') { state.loginRole='technician'; state.loginName=target.dataset.loginName || 'Daniel Novák'; state.modal='login'; return render(); }
+  if (target.dataset.action === 'login-admin') { state.loginRole='admin'; state.loginName='Demo Admin'; state.modal='login'; return render(); }
+  if (target.dataset.action === 'confirm-login') {
+    const password=document.querySelector('#demo-login-password')?.value || '';
+    if(!password)return;
+    const role=state.loginRole;
+    state.modal=null;
+    state.role=role;
+    return navigate(role==='admin'?'admin':'work');
+  }
   if (target.dataset.section) { state.currentSection=target.dataset.section; return navigate('section'); }
   if (target.dataset.answer) { state.answers[target.dataset.answer]={...answerFor(target.dataset.answer),value:target.dataset.value}; return render(); }
   if (target.dataset.note) return;
@@ -583,7 +697,12 @@ app.addEventListener('click', event => {
     section.items.forEach(item=>{ if(!answerFor(item.key).value) state.answers[item.key]={...answerFor(item.key),value:item.options.find(option=>option[2]==='good')?.[0] || item.options[0][0]}; });
     return render();
   }
-  if (target.dataset.photoFor) { state.selectedItem=target.dataset.photoFor; startPendingPhoto(); return navigate('photo-capture'); }
+  if (target.dataset.photoFor) {
+    state.selectedItem = target.dataset.photoFor;
+    const libraryIndex = Math.max(0, photoLibrary.findIndex(photo => photo.itemKey === state.selectedItem));
+    startPendingPhoto(photoLibrary[libraryIndex].src, libraryIndex);
+    return navigate('photo-capture');
+  }
   if (target.dataset.editPhoto) {
     const photo=state.photos.find(value=>value.id===target.dataset.editPhoto);
     if(photo){state.selectedItem=photo.itemKey;state.pendingPhoto={...photo,strokes:photo.strokes?.map(stroke=>stroke.map(point=>({...point})))||[],editingId:photo.id,libraryIndex:photoLibrary.findIndex(entry=>entry.src===photo.src),rotation:0};return navigate('photo-edit');}
@@ -614,9 +733,10 @@ app.addEventListener('click', event => {
   if (target.dataset.action === 'signature-clear') { state.signature=false; return render(); }
   if (target.dataset.action === 'finalize') { state.final=true; state.signature=true; return navigate('history'); }
   if (target.dataset.action === 'create-revision') { state.final=false; state.signature=false; state.modal='toast:Nová revize byla vytvořena jako samostatná rozpracovaná kontrola.'; state.answers['other.notes']={value:'NOTE',note:'Revize původního protokolu.'}; return render(); }
-  if (target.dataset.pdf !== undefined) { state.pdfPage=Number(target.dataset.pdf); return navigate('pdf'); }
+  if (target.dataset.pdfDocument) { state.pdfDocument=target.dataset.pdfDocument; state.pdfPage=0; return navigate('pdf'); }
+  if (target.dataset.pdf !== undefined) { state.pdfDocument='complete'; state.pdfPage=Number(target.dataset.pdf); return navigate('pdf'); }
   if (target.dataset.action === 'pdf-prev') { state.pdfPage=Math.max(0,state.pdfPage-1); return render(); }
-  if (target.dataset.action === 'pdf-next') { state.pdfPage=Math.min(2,state.pdfPage+1); return render(); }
+  if (target.dataset.action === 'pdf-next') { state.pdfPage=Math.min(currentPdfPageCount()-1,state.pdfPage+1); return render(); }
   if (target.dataset.admin) { state.adminTab=target.dataset.admin; return render(); }
   if (target.dataset.action === 'integrity-run') { state.integrityRan=true; return render(); }
   if (target.dataset.demoToast) { state.modal=`toast:${target.dataset.demoToast}`; return render(); }
@@ -630,7 +750,12 @@ document.addEventListener('click', event => {
   if (target.dataset.demoAction === 'theme') { state.theme=state.theme==='dark'?'light':'dark'; return render(); }
   if (target.dataset.jump) {
     const map={login:'login',work:'work',inspection:'inspection',photo:'photo-edit',history:'history',admin:'admin'};
-    if(target.dataset.jump==='photo'){state.role='technician';state.selectedItem='exterior.entrance_doors';const existing=state.photos[0];state.pendingPhoto={...existing,strokes:existing.strokes||[],editingId:existing.id,libraryIndex:0,rotation:0};}
+    if(target.dataset.jump==='photo'){
+      state.role='technician';
+      const existing=state.photos.find(photo=>photo.itemKey==='exterior.entrance_doors')||state.photos[0];
+      state.selectedItem=existing.itemKey;
+      state.pendingPhoto={...existing,strokes:existing.strokes||[],editingId:existing.id,libraryIndex:photoLibrary.findIndex(photo=>photo.itemKey===existing.itemKey),rotation:0};
+    }
     return navigate(map[target.dataset.jump]);
   }
 });
@@ -639,6 +764,12 @@ window.addEventListener('resize', () => {
   if (state.route === 'photo-edit') initMarkupCanvas();
   if (state.route === 'signature') initSignatureCanvas();
 });
+
+if ('serviceWorker' in navigator && ['http:', 'https:'].includes(location.protocol)) {
+  const registerServiceWorker = () => navigator.serviceWorker.register('./sw.js').catch(() => {});
+  if (document.readyState === 'complete') registerServiceWorker();
+  else window.addEventListener('load', registerServiceWorker, { once: true });
+}
 
 setInterval(() => {
   const clock=document.querySelector('[data-clock]');

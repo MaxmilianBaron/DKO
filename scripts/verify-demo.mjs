@@ -48,11 +48,13 @@ async function evaluate(cdp, expression) {
 }
 
 async function waitFor(cdp, expression, label) {
-  for (let attempt = 0; attempt < 80; attempt += 1) {
-    if (await evaluate(cdp, `Boolean(${expression})`)) return;
+  for (let attempt = 0; attempt < 200; attempt += 1) {
+    try {
+      if (await evaluate(cdp, `Boolean(${expression})`)) return;
+    } catch {}
     await delay(100);
   }
-  const detail = await evaluate(cdp, `({url:location.href,text:document.body?.innerText?.slice(0,500),html:document.querySelector('#app')?.innerHTML?.slice(0,300)})`);
+  const detail = await evaluate(cdp, `({url:location.href,text:document.body?.innerText?.slice(0,500),html:document.querySelector('#app')?.innerHTML?.slice(0,300)})`).catch(error => ({ error: error.message }));
   throw new Error(`Timed out waiting for ${label}. State: ${JSON.stringify(detail)}`);
 }
 
@@ -77,27 +79,51 @@ async function main() {
     '--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
     `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`, '--window-size=1440,1000', 'about:blank',
   ], { stdio: 'ignore', windowsHide: true });
+  let socket;
 
   try {
     const pages = await getJson('/json/list');
     const target = pages.find(page => page.type === 'page' && page.webSocketDebuggerUrl);
     if (!target) throw new Error('No browser page target found.');
-    const socket = new WebSocket(target.webSocketDebuggerUrl);
+    socket = new WebSocket(target.webSocketDebuggerUrl);
     await new Promise((resolve, reject) => { socket.onopen = resolve; socket.onerror = reject; });
     const cdp = new Cdp(socket);
     await cdp.send('Page.enable');
     await cdp.send('Runtime.enable');
+    await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false });
     await cdp.send('Page.navigate', { url });
     await waitFor(cdp, `document.querySelector('[data-action="login-technician"]')`, 'login screen');
 
     await click(cdp, '[data-action="login-technician"]');
+    await waitFor(cdp, `document.querySelector('#demo-login-password')?.value === 'demo'`, 'technician password dialog');
+    await click(cdp, '[data-action="confirm-login"]');
     await waitFor(cdp, `document.body.innerText.toLowerCase().includes('rozpracovaná kontrola')`, 'technician work screen');
     await click(cdp, '[data-route="inspection"]');
     await waitFor(cdp, `document.body.innerText.includes('Vyberte sekci')`, 'inspection overview');
+    const coverage = await evaluate(cdp, `(() => ({
+      items: allItems.length,
+      photos: state.photos.length,
+      itemKeys: new Set(allItems.map(item => item.key)).size,
+      photoKeys: new Set(state.photos.map(photo => photo.itemKey)).size,
+      sources: new Set(state.photos.map(photo => photo.src)).size,
+      uncovered: allItems.filter(item => !state.photos.some(photo => photo.itemKey === item.key)).map(item => item.key),
+    }))()`);
+    if (coverage.items !== 48 || coverage.photos !== 48 || coverage.itemKeys !== 48 || coverage.photoKeys !== 48 || coverage.sources !== 48 || coverage.uncovered.length) {
+      throw new Error(`Expected exact 48-item real-photo coverage: ${JSON.stringify(coverage)}`);
+    }
     await click(cdp, '[data-section="outside_inspection"]');
     await waitFor(cdp, `document.body.innerText.includes('Vchodové dveře')`, 'inspection items');
     await click(cdp, '[data-photo-for="exterior.entrance_doors"]');
     await waitFor(cdp, `document.body.innerText.includes('Pořízení fotografie')`, 'photo capture');
+    await click(cdp, '[data-action="choose-photo"]');
+    await waitFor(cdp, `document.querySelectorAll('[data-library-photo]').length === 48`, '48-photo library');
+    const libraryIssues = await evaluate(cdp, `(async () => {
+      const sources=Array.from(document.querySelectorAll('.gallery img'), image => image.src);
+      const results=await Promise.all(sources.map(async source => ({source,ok:(await fetch(source)).ok})));
+      return results.filter(result => !result.ok).map(result => result.source);
+    })()`);
+    if (libraryIssues.length) throw new Error(`Broken real-photo library assets: ${libraryIssues.join(', ')}`);
+    await click(cdp, '[data-library-photo="13"]');
     await click(cdp, '[data-action="use-photo"]');
     await waitFor(cdp, `document.querySelector('#markup-canvas')`, 'markup editor');
     await draw(cdp, '#markup-canvas');
@@ -117,8 +143,32 @@ async function main() {
     await draw(cdp, '#signature-canvas');
     await click(cdp, '[data-action="finalize"]');
     await waitFor(cdp, `document.body.innerText.includes('Kompletní PDF')`, 'history documents');
-    await click(cdp, '[data-pdf="0"]');
-    await waitFor(cdp, `document.querySelector('.pdf-page')`, 'PDF preview');
+    await click(cdp, '[data-pdf-document="protocol"]');
+    await waitFor(cdp, `document.querySelector('[data-protocol-page="1"]')`, 'protocol PDF page one');
+    const protocolPageOne = await evaluate(cdp, `Array.from(document.querySelectorAll('[data-pdf-row-key]'), row => row.dataset.pdfRowKey)`);
+    if (protocolPageOne.length !== 28) throw new Error(`Protocol page one must contain 28 active items, received ${protocolPageOne.length}.`);
+    await click(cdp, '[data-action="pdf-next"]');
+    await waitFor(cdp, `document.querySelector('[data-protocol-page="2"]')`, 'protocol PDF page two');
+    const protocolDesktopFrame = await evaluate(cdp, `({mobileMode:document.documentElement.classList.contains('mobile-mode'),sidebar:getComputedStyle(document.querySelector('.demo-sidebar')).display,viewport:innerWidth})`);
+    if (protocolDesktopFrame.mobileMode || protocolDesktopFrame.sidebar === 'none') throw new Error(`Desktop frame disappeared on PDF page two: ${JSON.stringify(protocolDesktopFrame)}`);
+    const protocolPageTwo = await evaluate(cdp, `Array.from(document.querySelectorAll('[data-pdf-row-key]'), row => row.dataset.pdfRowKey)`);
+    const protocolKeys = new Set([...protocolPageOne, ...protocolPageTwo]);
+    if (protocolPageTwo.length !== 20 || protocolKeys.size !== 48) {
+      throw new Error(`Protocol must cover all 48 active items across 28+20 rows: ${JSON.stringify({pageOne:protocolPageOne.length,pageTwo:protocolPageTwo.length,unique:protocolKeys.size})}`);
+    }
+    await click(cdp, '[data-route="history"]');
+    await click(cdp, '[data-pdf-document="photos"]');
+    await waitFor(cdp, `document.querySelector('[data-photo-sheet="1"]')`, 'photo PDF first sheet');
+    const photoDocument = await evaluate(cdp, `({pageCount:currentPdfPageCount(),expected:Math.ceil(state.photos.length/4),cards:document.querySelectorAll('.photo-sheet figure').length})`);
+    if (photoDocument.pageCount !== photoDocument.expected || photoDocument.cards !== 4) throw new Error(`Photo PDF does not use four A6 cards per A4: ${JSON.stringify(photoDocument)}`);
+    await evaluate(cdp, `state.pdfPage=currentPdfPageCount()-1;render()`);
+    await waitFor(cdp, `document.querySelector('[data-photo-sheet="' + currentPdfPageCount() + '"]')`, 'photo PDF final sheet');
+    const lastSheet = await evaluate(cdp, `({cards:document.querySelectorAll('.photo-sheet figure').length,expected:state.photos.length%4||4})`);
+    if (lastSheet.cards !== lastSheet.expected) throw new Error(`Unexpected final photo sheet card count: ${JSON.stringify(lastSheet)}.`);
+    await click(cdp, '[data-route="history"]');
+    await click(cdp, '[data-pdf-document="complete"]');
+    const completeDocument = await evaluate(cdp, `({pageCount:currentPdfPageCount(),expected:2+Math.ceil(state.photos.length/4),document:state.pdfDocument})`);
+    if (completeDocument.document !== 'complete' || completeDocument.pageCount !== completeDocument.expected) throw new Error(`Complete PDF page count mismatch: ${JSON.stringify(completeDocument)}`);
     await click(cdp, '[data-jump="admin"]');
     await waitFor(cdp, `document.body.innerText.includes('Kontrola dat')`, 'admin menu');
     await click(cdp, '[data-admin="integrity"]');
@@ -132,9 +182,39 @@ async function main() {
       return issues;
     })()`);
     if (issues.length) throw new Error(`Visual smoke issues: ${issues.join(', ')}`);
+
+    await cdp.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
+    await cdp.send('Page.navigate', { url });
+    await waitFor(cdp, `document.querySelector('[data-action="login-technician"]')`, 'mobile login screen');
+    const mobileLayout = await evaluate(cdp, `(() => {
+      const phone=document.querySelector('.phone')?.getBoundingClientRect();
+      const sidebar=getComputedStyle(document.querySelector('.demo-sidebar')).display;
+      return {phone:{x:phone?.x,y:phone?.y,width:phone?.width,height:phone?.height},sidebar,viewport:{width:innerWidth,height:innerHeight},overflow:document.documentElement.scrollWidth>innerWidth+1};
+    })()`);
+    if (mobileLayout.sidebar !== 'none' || mobileLayout.overflow || mobileLayout.phone.x !== 0 || mobileLayout.phone.y !== 0 || mobileLayout.phone.width !== 390 || mobileLayout.phone.height !== 844) {
+      throw new Error(`Mobile layout is not edge-to-edge: ${JSON.stringify(mobileLayout)}`);
+    }
+
+    await cdp.send('Emulation.clearDeviceMetricsOverride');
+    await cdp.send('Page.navigate', { url: `${url}${url.includes('?') ? '&' : '?'}mobile=1` });
+    await waitFor(cdp, `document.documentElement.classList.contains('mobile-mode')`, 'explicit mobile mode');
+    const explicitMode = await evaluate(cdp, `({sidebar:getComputedStyle(document.querySelector('.demo-sidebar')).display,phoneWidth:document.querySelector('.phone').getBoundingClientRect().width,viewportWidth:innerWidth})`);
+    if (explicitMode.sidebar !== 'none' || explicitMode.phoneWidth !== explicitMode.viewportWidth) throw new Error(`Explicit mobile mode failed: ${JSON.stringify(explicitMode)}`);
+    const serviceWorkerState = await evaluate(cdp, `(async () => {
+      if (!('serviceWorker' in navigator)) return 'unsupported';
+      try {
+        const registration = await navigator.serviceWorker.register('./sw.js');
+        const result = await Promise.race([navigator.serviceWorker.ready, new Promise(resolve => setTimeout(() => resolve(null), 5000))]);
+        return result?.active?.state || registration.installing?.state || registration.waiting?.state || registration.active?.state || 'not-ready';
+      } catch (error) {
+        return 'error:' + error.message;
+      }
+    })()`);
+    if (serviceWorkerState !== 'activated') throw new Error(`PWA service worker failed: ${serviceWorkerState}`);
     socket.close();
-    console.log('DKO demo verification passed: technician flow, photo markup, signature, PDF, Admin and assets.');
+    console.log('DKO demo verification passed: technician flow, photo markup, signature, complete 48-item PDF, photo sheets, Admin, assets and edge-to-edge mobile mode.');
   } finally {
+    socket?.close();
     browser.kill();
     await delay(350);
     await rm(profile, { recursive: true, force: true }).catch(() => {});
