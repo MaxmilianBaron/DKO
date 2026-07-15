@@ -91,6 +91,8 @@ async function main() {
     await waitFor(cdp, `document.querySelector('[data-action="login-technician"]')`, 'login screen');
 
     await click(cdp, '[data-action="login-technician"]');
+    await waitFor(cdp, `document.querySelector('#demo-login-password')?.value === 'demo'`, 'technician password dialog');
+    await click(cdp, '[data-action="confirm-login"]');
     await waitFor(cdp, `document.body.innerText.toLowerCase().includes('rozpracovaná kontrola')`, 'technician work screen');
     await click(cdp, '[data-route="inspection"]');
     await waitFor(cdp, `document.body.innerText.includes('Vyberte sekci')`, 'inspection overview');
@@ -132,8 +134,37 @@ async function main() {
       return issues;
     })()`);
     if (issues.length) throw new Error(`Visual smoke issues: ${issues.join(', ')}`);
+
+    await cdp.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
+    await cdp.send('Page.navigate', { url });
+    await waitFor(cdp, `document.querySelector('[data-action="login-technician"]')`, 'mobile login screen');
+    const mobileLayout = await evaluate(cdp, `(() => {
+      const phone=document.querySelector('.phone')?.getBoundingClientRect();
+      const sidebar=getComputedStyle(document.querySelector('.demo-sidebar')).display;
+      return {phone:{x:phone?.x,y:phone?.y,width:phone?.width,height:phone?.height},sidebar,viewport:{width:innerWidth,height:innerHeight},overflow:document.documentElement.scrollWidth>innerWidth+1};
+    })()`);
+    if (mobileLayout.sidebar !== 'none' || mobileLayout.overflow || mobileLayout.phone.x !== 0 || mobileLayout.phone.y !== 0 || mobileLayout.phone.width !== 390 || mobileLayout.phone.height !== 844) {
+      throw new Error(`Mobile layout is not edge-to-edge: ${JSON.stringify(mobileLayout)}`);
+    }
+
+    await cdp.send('Emulation.clearDeviceMetricsOverride');
+    await cdp.send('Page.navigate', { url: `${url}${url.includes('?') ? '&' : '?'}mobile=1` });
+    await waitFor(cdp, `document.documentElement.classList.contains('mobile-mode')`, 'explicit mobile mode');
+    const explicitMode = await evaluate(cdp, `({sidebar:getComputedStyle(document.querySelector('.demo-sidebar')).display,phoneWidth:document.querySelector('.phone').getBoundingClientRect().width,viewportWidth:innerWidth})`);
+    if (explicitMode.sidebar !== 'none' || explicitMode.phoneWidth !== explicitMode.viewportWidth) throw new Error(`Explicit mobile mode failed: ${JSON.stringify(explicitMode)}`);
+    const serviceWorkerState = await evaluate(cdp, `(async () => {
+      if (!('serviceWorker' in navigator)) return 'unsupported';
+      try {
+        const registration = await navigator.serviceWorker.register('./sw.js');
+        const result = await Promise.race([navigator.serviceWorker.ready, new Promise(resolve => setTimeout(() => resolve(null), 5000))]);
+        return result?.active?.state || registration.installing?.state || registration.waiting?.state || registration.active?.state || 'not-ready';
+      } catch (error) {
+        return 'error:' + error.message;
+      }
+    })()`);
+    if (serviceWorkerState !== 'activated') throw new Error(`PWA service worker failed: ${serviceWorkerState}`);
     socket.close();
-    console.log('DKO demo verification passed: technician flow, photo markup, signature, PDF, Admin and assets.');
+    console.log('DKO demo verification passed: technician flow, photo markup, signature, PDF, Admin, assets and edge-to-edge mobile mode.');
   } finally {
     browser.kill();
     await delay(350);

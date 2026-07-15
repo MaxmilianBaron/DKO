@@ -2,10 +2,16 @@
 <html lang="cs">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="description" content="Interaktivní ukázka DKO — offline Android aplikace pro digitální kontroly objektů.">
+    <meta name="theme-color" content="#000000">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="DKO Demo">
     <title>DKO — interaktivní demo</title>
     <link rel="icon" href="assets/app-icon.webp">
+    <link rel="manifest" href="manifest.webmanifest">
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
@@ -45,7 +51,10 @@
             <p class="demo-kicker">MOBILNÍ APLIKACE · ANDROID</p>
             <h2 data-stage-title>Přihlášení do DKO</h2>
           </div>
-          <div class="demo-badge"><span></span> FAKE DATA</div>
+          <div class="stage-actions">
+            <a class="mobile-preview-link" href="?mobile=1">Otevřít 1:1 mobilní demo</a>
+            <div class="demo-badge"><span></span> FAKE DATA</div>
+          </div>
         </header>
 
         <section class="device-area">

@@ -1,4 +1,6 @@
 const app = document.querySelector('#app');
+const query = new URLSearchParams(window.location.search);
+document.documentElement.classList.toggle('mobile-mode', query.get('mobile') === '1');
 
 const photoLibrary = [
   { src: 'assets/photos/entrance-door.webp', title: 'Vstupní dveře' },
@@ -62,6 +64,8 @@ function initialState() {
     final: true,
     signature: true,
     pendingPhoto: null,
+    loginRole: null,
+    loginName: null,
     photos: [
       { id: 'F001', sequence: 1, itemKey: 'exterior.entrance_doors', src: photoLibrary[0].src, markedSrc: null, location: 'Hlavní vstup', description: 'Odřený nátěr u spodní hrany.', strokes: [] },
       { id: 'F002', sequence: 2, itemKey: 'lighting.lights', src: photoLibrary[1].src, markedSrc: null, location: '2. patro', description: 'Jedno svítidlo nesvítí.', strokes: [] },
@@ -179,8 +183,8 @@ function renderLogin() {
         <p class="body-copy" style="color:inherit">Data zůstávají pouze v tomto telefonu. Vyberte svůj účet a zadejte heslo.</p>
       </section>
       <h2 class="section-title">Technici</h2>
-      <button class="account-card" data-action="login-technician"><span class="list-icon">${icon('badge')}</span><span><strong>Daniel Novák</strong><small>Technik · demo účet</small></span></button>
-      <button class="account-card" data-action="login-technician"><span class="list-icon">${icon('badge')}</span><span><strong>Petra Malá</strong><small>Technik · demo účet</small></span></button>
+      <button class="account-card" data-action="login-technician" data-login-name="Daniel Novák"><span class="list-icon">${icon('badge')}</span><span><strong>Daniel Novák</strong><small>Technik · demo účet</small></span></button>
+      <button class="account-card" data-action="login-technician" data-login-name="Petra Malá"><span class="list-icon">${icon('badge')}</span><span><strong>Petra Malá</strong><small>Technik · demo účet</small></span></button>
     </div></div>
     <div class="bottom-action"><button class="button button--wide button--outline" data-action="login-admin">${icon('admin')} Přihlásit jako Admin</button></div>`);
 }
@@ -386,6 +390,16 @@ function renderSettings() {
 
 function renderModal() {
   if (!state.modal) return '';
+  if (state.modal === 'login') {
+    const admin = state.loginRole === 'admin';
+    return `<div class="modal"><section class="dialog" role="dialog" aria-modal="true" aria-labelledby="login-dialog-title">
+      <div class="row" style="justify-content:center;color:var(--primary)">${icon(admin ? 'admin' : 'badge')}</div>
+      <h2 id="login-dialog-title">${admin ? 'Přihlášení Admin' : escapeHtml(state.loginName || 'Technik')}</h2>
+      <p>V ostré aplikaci zadejte své heslo. V této ukázce použijte předvyplněné heslo <strong>demo</strong>.</p>
+      <div class="field"><label>Heslo</label><input id="demo-login-password" class="input" type="password" value="demo" autocomplete="off"></div>
+      <div class="button-row"><button class="button button--outline" data-action="modal-close">Zrušit</button><button class="button" data-action="confirm-login">Přihlásit</button></div>
+    </section></div>`;
+  }
   if (state.modal === 'photo-gallery') return `<div class="modal"><section class="dialog"><h2>Vyberte ukázkový snímek</h2><p>Všechny fotografie byly vytvořené pouze pro toto demo.</p><div class="gallery">${photoLibrary.map((photo,index) => `<button data-library-photo="${index}" class="${state.pendingPhoto?.libraryIndex === index ? 'is-selected' : ''}"><img src="${photo.src}" alt="${photo.title}"><span>${photo.title}</span></button>`).join('')}</div><button class="button button--wide button--outline" data-action="modal-close">Zavřít</button></section></div>`;
   if (state.modal === 'incomplete') {
     const incomplete = allItems.length - totalProgress();
@@ -573,8 +587,16 @@ app.addEventListener('click', event => {
   if (target.dataset.action === 'drawer-open') { state.drawer=true; return render(); }
   if (target.dataset.action === 'drawer-close') { state.drawer=false; return render(); }
   if (target.dataset.action === 'logout') { state.role=null; state.route='login'; state.drawer=false; return render(); }
-  if (target.dataset.action === 'login-technician') { state.role='technician'; return navigate('work'); }
-  if (target.dataset.action === 'login-admin') { state.role='admin'; return navigate('admin'); }
+  if (target.dataset.action === 'login-technician') { state.loginRole='technician'; state.loginName=target.dataset.loginName || 'Daniel Novák'; state.modal='login'; return render(); }
+  if (target.dataset.action === 'login-admin') { state.loginRole='admin'; state.loginName='Demo Admin'; state.modal='login'; return render(); }
+  if (target.dataset.action === 'confirm-login') {
+    const password=document.querySelector('#demo-login-password')?.value || '';
+    if(!password)return;
+    const role=state.loginRole;
+    state.modal=null;
+    state.role=role;
+    return navigate(role==='admin'?'admin':'work');
+  }
   if (target.dataset.section) { state.currentSection=target.dataset.section; return navigate('section'); }
   if (target.dataset.answer) { state.answers[target.dataset.answer]={...answerFor(target.dataset.answer),value:target.dataset.value}; return render(); }
   if (target.dataset.note) return;
@@ -639,6 +661,12 @@ window.addEventListener('resize', () => {
   if (state.route === 'photo-edit') initMarkupCanvas();
   if (state.route === 'signature') initSignatureCanvas();
 });
+
+if ('serviceWorker' in navigator && ['http:', 'https:'].includes(location.protocol)) {
+  const registerServiceWorker = () => navigator.serviceWorker.register('./sw.js').catch(() => {});
+  if (document.readyState === 'complete') registerServiceWorker();
+  else window.addEventListener('load', registerServiceWorker, { once: true });
+}
 
 setInterval(() => {
   const clock=document.querySelector('[data-clock]');

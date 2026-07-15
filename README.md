@@ -1,5 +1,10 @@
 # DKO — Digitální kontrola objektů · interaktivní demo
 
+## [▶ Spustit živé interaktivní demo DKO](https://maxmilianbaron.github.io/DKO/)
+
+Na telefonu se demo otevře přes celou obrazovku jako mobilní aplikace. Na
+počítači zůstane skutečné mobilní rozhraní uvnitř rámečku telefonu.
+
 **English version:** [jump to the English section](#english)
 
 ## Česky
@@ -7,8 +12,8 @@
 Interaktivní veřejná ukázka DKO, offline Android aplikace pro terénní kontroly
 budov, fotodokumentaci, auditovatelné revize a tvorbu tiskových PDF protokolů.
 
-Repozitář je během přípravy privátní. GitHub Pages se zapne až po obsahovém a
-vizuálním schválení dema.
+Zdrojový repozitář zůstává privátní. Živé demo obsahuje výhradně smyšlená data
+a syntetické fotografie vytvořené pro tuto ukázku.
 
 ### Lokální náhled
 
@@ -39,13 +44,13 @@ http://127.0.0.1:4174/
   </tr>
   <tr>
     <td><strong>Lokální Admin nastavení</strong><br><img src="docs/screenshots/07-admin.png" alt="Admin nastavení" width="420"></td>
-    <td><strong>Mobilní fotografický editor</strong><br><img src="docs/screenshots/08-mobile-photo-markup.png" alt="Mobilní editor fotografie" width="220"></td>
+    <td><strong>Mobilní fotografický editor</strong><br><img src="docs/screenshots/09-mobile-photo-markup.png" alt="Mobilní editor fotografie" width="220"></td>
   </tr>
 </table>
 
 ### Co lze v demu vyzkoušet
 
-- přihlášení do role `Technik` nebo `Admin` bez skutečného hesla
+- přihlášení do role `Technik` nebo `Admin` s ukázkovým heslem `demo`
 - pokračování rozpracované kontroly a výběr objektu podle termínu
 - přehled devíti sekcí a přechod na jednotlivé kontrolní položky
 - stavy v pořádku / závada, samostatné poznámky a fotografie
@@ -58,6 +63,7 @@ http://127.0.0.1:4174/
 - dvoustránkový protokol A4 na šířku a fotolist 4× A6
 - Admin přehled účtů, domů, seznamu položek, zálohy, tisku a integrity
 - světlý i tmavý vzhled odpovídající systémovému motivu Androidu
+- mobilní zobrazení přes celou obrazovku a možnost instalace jako webové aplikace
 
 ### Vztah dema k produkční aplikaci
 
@@ -107,12 +113,17 @@ Všechna práva vyhrazena Aardvarkland Inc.
 
 ## English
 
+## [▶ Launch the live interactive DKO demo](https://maxmilianbaron.github.io/DKO/)
+
+On a phone, the demo fills the screen like the mobile application. On desktop,
+the same real mobile interface remains presented inside a phone frame.
+
 Interactive showcase of DKO, an offline Android application for field building
 inspections, photo documentation, auditable revisions, and printable PDF
 reports.
 
-The repository remains private while the showcase is being reviewed. GitHub
-Pages will be enabled only after content and visual approval.
+The source repository remains private. The live showcase contains fictional
+data and synthetic photographs created specifically for this demo.
 
 ### Local preview
 
