@@ -1,10 +1,21 @@
 # DKO — Digitální kontrola objektů · interaktivní demo
 
-## Stav interaktivního preview
+## ▶ Spustit interaktivní preview aplikace
+
+[![Otevřít DKO v GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/MaxmilianBaron/DKO?quickstart=1)
+
+**[Otevřít skutečné mobilní demo DKO](https://codespaces.new/MaxmilianBaron/DKO?quickstart=1)**
+
+Protože je repozitář zatím privátní, preview se otevře přihlášeným uživatelům
+s přístupem k DKO v privátním GitHub Codespace. Po vytvoření prostředí se
+aplikace sama spustí a otevře v náhledu prohlížeče; není potřeba zadávat žádný
+příkaz.
+
+## Stav GitHub Pages
 
 Demo je nyní součástí jediného repozitáře `MaxmilianBaron/DKO`, stejně jako u
-WMS. Repozitář je dočasně privátní, proto GitHub Pages zatím není veřejně
-dostupné. Po budoucím zveřejnění bude adresa:
+WMS. Současný tarif nepovoluje GitHub Pages z privátního repozitáře. Po
+budoucím zveřejnění bude veřejná adresa:
 
 ```text
 https://maxmilianbaron.github.io/DKO/
@@ -134,6 +145,14 @@ Admin část, obrázky a horizontální přetečení stránky.
 Všechna práva vyhrazena Aardvarkland Inc.
 
 ## English
+
+### ▶ Launch the interactive application preview
+
+[![Open DKO in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/MaxmilianBaron/DKO?quickstart=1)
+
+The private preview is available to signed-in users who have access to DKO.
+The Codespace starts the static application automatically and opens its browser
+preview without requiring a command.
 
 The demo now lives in the single private `MaxmilianBaron/DKO` repository, using
 the same one-repository structure as the WMS showcase. GitHub Pages will become

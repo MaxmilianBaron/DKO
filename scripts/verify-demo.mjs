@@ -90,6 +90,7 @@ async function main() {
     const cdp = new Cdp(socket);
     await cdp.send('Page.enable');
     await cdp.send('Runtime.enable');
+    await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false });
     await cdp.send('Page.navigate', { url });
     await waitFor(cdp, `document.querySelector('[data-action="login-technician"]')`, 'login screen');
 
