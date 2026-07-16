@@ -18,8 +18,9 @@ do reálného provozního prostředí. Aplikace je plně funkční pro každoden
 kontroly objektů, práci s fotodokumentací, evidenci závad a tvorbu výsledných
 protokolů.
 
-Veřejná ukázka odpovídá zákaznické verzi v51 včetně nové modré ikony DKO a
-Admin správy domů a techniků s bezpečnostním potvrzením heslem.
+Veřejná ukázka odpovídá zákaznické verzi v53 včetně náhledu celého kompletního
+PDF před tiskem, sdílení všech jeho stran, šipky Zpět v Historii a skrytí
+vypnutých kontrolních položek z nově vytvořeného PDF.
 
 ## ▶ Vyzkoušet DKO
 
@@ -104,6 +105,10 @@ http://127.0.0.1:4174/
     <td><strong>Fotodokumentace 4× A6</strong><br><img src="docs/screenshots/06c-photo-sheet-preview.png" alt="Fotolist se čtyřmi oblastmi A6" width="420"></td>
   </tr>
   <tr>
+    <td><strong>Kompletní PDF v jednom náhledu před tiskem</strong><br><img src="docs/screenshots/06d-complete-print-preview.png" alt="Náhled celého kompletního PDF před tiskem" width="420"></td>
+    <td></td>
+  </tr>
+  <tr>
     <td><strong>Lokální Admin nastavení</strong><br><img src="docs/screenshots/07-admin.png" alt="Admin nastavení" width="420"></td>
     <td><strong>Admin správa kontrolních položek</strong><br><img src="docs/screenshots/07b-admin-form-items.png" alt="Přidání, přejmenování, řazení a odebrání kontrolních položek" width="420"></td>
   </tr>
@@ -133,6 +138,8 @@ http://127.0.0.1:4174/
 - přesné dvě A4 protokolu na šířku se všemi 48 položkami (28 + 20)
 - dvanáct A4 fotolistů na výšku, každý se čtyřmi samostatnými oblastmi A6
 - samostatný Protokol, Fotodokumentaci a kompletní 14stránkový dokument
+- tisk kompletního PDF přes jeden společný náhled bez výběru protokolu nebo fotolistu
+- sdílení celého kompletního dokumentu a skrytí vypnutých položek v novém PDF
 - funkční Admin správu domů a účtů techniků: přidání, úpravu a odebrání potvrzené heslem `demo`
 - ochranu rolí: správu domů a účtů vidí pouze Admin, nikoli přihlášený technik
 - zachování historie, hotových protokolů a PDF při odebrání domu nebo technika

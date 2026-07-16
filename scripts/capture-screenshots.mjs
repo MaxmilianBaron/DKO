@@ -54,6 +54,7 @@ async function main(){
     await click(cdp,'[data-pdf-document="protocol"]');await delay(500);await capture(cdp,'06-pdf-preview');
     await click(cdp,'[data-action="pdf-next"]');await delay(500);await capture(cdp,'06b-pdf-preview-page-2');
     await click(cdp,'[data-route="history"]');await click(cdp,'[data-pdf-document="photos"]');await delay(900);await capture(cdp,'06c-photo-sheet-preview');
+    await click(cdp,'[data-route="history"]');await click(cdp,'[data-print-document="complete"]');await delay(500);await capture(cdp,'06d-complete-print-preview');
     await click(cdp,'[data-jump="admin"]');await capture(cdp,'07-admin');await click(cdp,'[data-admin="form"]');await capturePhone(cdp,'07b-admin-form-items');
     await click(cdp,'[data-route="admin"]');await click(cdp,'[data-admin="buildings"]');await capturePhone(cdp,'07c-admin-buildings');
     await click(cdp,'[data-route="admin"]');await click(cdp,'[data-admin="technicians"]');await capturePhone(cdp,'07d-admin-technicians');

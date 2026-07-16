@@ -122,6 +122,7 @@ function initialState() {
     selectedItem: 'exterior.entrance_doors',
     pdfPage: 0,
     pdfDocument: 'complete',
+    pdfPrintPreview: false,
     adminTab: null,
     final: true,
     signature: true,
@@ -231,6 +232,18 @@ function managedFormEntry(itemKey) {
 
 function activeManagedFormCount() {
   return state.formSections.reduce((count, section) => count + section.items.filter(item => item.enabled).length, 0);
+}
+
+function activePdfItems() {
+  const enabledKeys = new Set(
+    state.formSections.flatMap(section => section.items.filter(item => item.enabled).map(item => item.key)),
+  );
+  return allItems.filter(item => enabledKeys.has(item.key));
+}
+
+function activePdfPhotos() {
+  const enabledKeys = new Set(activePdfItems().map(item => item.key));
+  return state.photos.filter(photo => enabledKeys.has(photo.itemKey));
 }
 
 function appTopbar(title, subtitle = '', { back = null, menu = false, logout = false } = {}) {
@@ -395,15 +408,16 @@ function renderSignature() {
 }
 
 function historyDocuments() {
-  const photoPages = Math.max(1, Math.ceil(state.photos.length / 4));
+  const photoPages = Math.max(1, Math.ceil(activePdfPhotos().length / 4));
   return `<div class="document-row"><button class="button button--text" data-pdf-document="protocol" data-pdf="0">Protokol · 2 strany A4</button><button class="icon-button" data-demo-toast="PDF bylo uloženo pouze v ukázce">${icon('download')}</button><button class="icon-button" data-demo-toast="Otevřen tiskový dialog ukázky">${icon('print')}</button><button class="icon-button" data-demo-toast="Sdílení je v demu vypnuté">${icon('share')}</button></div>
     <div class="document-row"><button class="button button--text" data-pdf-document="photos" data-pdf="0">Fotodokumentace · ${photoPages}× A4 / 4× A6</button><button class="icon-button" data-demo-toast="PDF bylo uloženo pouze v ukázce">${icon('download')}</button><button class="icon-button" data-demo-toast="Otevřen tiskový dialog ukázky">${icon('print')}</button><button class="icon-button" data-demo-toast="Sdílení je v demu vypnuté">${icon('share')}</button></div>
-    <div class="document-row"><button class="button button--text" data-pdf-document="complete" data-pdf="0">Kompletní PDF · ${2 + photoPages} stran</button><button class="icon-button" data-demo-toast="PDF bylo uloženo pouze v ukázce">${icon('download')}</button><button class="icon-button" data-demo-toast="Otevřen tiskový dialog ukázky">${icon('print')}</button><button class="icon-button" data-demo-toast="Sdílení je v demu vypnuté">${icon('share')}</button></div>`;
+    <div class="document-row"><button class="button button--text" data-pdf-document="complete" data-pdf="0">Kompletní PDF · ${2 + photoPages} stran</button><button class="icon-button" data-demo-toast="Celé kompletní PDF bylo uloženo pouze v ukázce">${icon('download')}</button><button class="icon-button" data-print-document="complete" aria-label="Tisk kompletního PDF">${icon('print')}</button><button class="icon-button" data-demo-toast="Sdílelo by se celé kompletní PDF se všemi ${2 + photoPages} stranami">${icon('share')}</button></div>`;
 }
 
 function renderHistory() {
   const name = state.role === 'admin' ? 'Demo Admin' : 'Daniel Novák';
-  return screen(`${appTopbar('Historie', name, { menu: true, logout: true })}
+  const backRoute = state.role === 'admin' ? 'admin' : 'work';
+  return screen(`${appTopbar('Historie', name, { back: backRoute, logout: true })}
     <div class="app-scroll"><div class="content">
       <section class="card history-card">
         <strong>Ukázková 12, 130 00 Praha 3</strong>
@@ -450,9 +464,10 @@ function pdfAnswer(item) {
 
 function pdfTable(pageIndex) {
   const sourcePage = pageIndex + 1;
+  const visibleItems = activePdfItems();
   const pageSections = sections.map(section => ({
     ...section,
-    pageItems: allItems.filter(item => item.sectionKey === section.key && item.pdfPage === sourcePage),
+    pageItems: visibleItems.filter(item => item.sectionKey === section.key && item.pdfPage === sourcePage),
   })).filter(section => section.pageItems.length);
   return `<div class="pdf-page" data-protocol-page="${sourcePage}">
     <div class="pdf-header">
@@ -466,7 +481,7 @@ function pdfTable(pageIndex) {
 }
 
 function photoSheet(pageIndex, sheetCount) {
-  const photos = [...state.photos].sort((a,b) => a.sequence - b.sequence).slice(pageIndex * 4, pageIndex * 4 + 4);
+  const photos = activePdfPhotos().sort((a,b) => a.sequence - b.sequence).slice(pageIndex * 4, pageIndex * 4 + 4);
   return `<div class="photo-sheet" data-photo-sheet="${pageIndex + 1}">${photos.map(photo => {
     const item = allItems.find(value => value.key === photo.itemKey);
     return `<figure><div class="photo-sheet-card"><img src="${photo.markedSrc || photo.src}" alt="${photo.id}"><figcaption><div class="photo-sheet-title"><strong>${photo.id} · DKO-DEMO-2026-001</strong><span>list ${pageIndex + 1}/${sheetCount}</span></div><span>Ukázková 12, 130 00 Praha 3</span><span>15. 7. 2026 09:41 · ${escapeHtml(item?.label || photo.itemKey)}</span><span>Umístění: ${escapeHtml(photo.location || 'neuvedeno')}</span><span>Popis: ${escapeHtml(photo.description || 'bez popisu')}</span><span>Technik: Daniel Novák · Zdroj: ukázková fotografie</span></figcaption></div></figure>`;
@@ -474,23 +489,24 @@ function photoSheet(pageIndex, sheetCount) {
 }
 
 function currentPdfPageCount() {
-  const photoPages = Math.max(1, Math.ceil(state.photos.length / 4));
+  const photoPages = Math.max(1, Math.ceil(activePdfPhotos().length / 4));
   if (state.pdfDocument === 'protocol') return 2;
   if (state.pdfDocument === 'photos') return photoPages;
   return 2 + photoPages;
 }
 
 function renderPdf() {
-  const photoPages = Math.max(1, Math.ceil(state.photos.length / 4));
+  const photoPages = Math.max(1, Math.ceil(activePdfPhotos().length / 4));
   const pageCount = currentPdfPageCount();
   const isProtocol = state.pdfDocument === 'protocol' || (state.pdfDocument === 'complete' && state.pdfPage < 2);
   const photoIndex = state.pdfDocument === 'photos' ? state.pdfPage : state.pdfPage - 2;
   const content = isProtocol ? pdfTable(state.pdfPage) : photoSheet(photoIndex, photoPages);
-  const subtitle = isProtocol ? 'Protokol 2× A4 na šířku · všech 48 položek' : `Fotodokumentace ${photoPages}× A4 na výšku · 4× A6`;
+  const subtitle = isProtocol ? `Protokol 2× A4 na šířku · ${activePdfItems().length} aktivních položek` : `Fotodokumentace ${photoPages}× A4 na výšku · 4× A6`;
   const documentLabel = state.pdfDocument === 'protocol' ? 'Protokol' : state.pdfDocument === 'photos' ? 'Fotodokumentace' : 'Kompletní PDF';
-  return screen(`${appTopbar('Náhled PDF', subtitle, { back: 'history' })}
+  return screen(`${appTopbar(state.pdfPrintPreview ? 'Náhled před tiskem' : 'Náhled PDF', subtitle, { back: 'history' })}
     <div class="pdf-viewer">${content}</div>
-    <div class="pdf-controls"><button class="button button--compact" data-action="pdf-prev" ${state.pdfPage === 0 ? 'disabled' : ''}>Předchozí</button><strong class="small">${documentLabel} · strana ${state.pdfPage+1} / ${pageCount}</strong><button class="button button--compact" data-action="pdf-next" ${state.pdfPage === pageCount-1 ? 'disabled' : ''}>Další</button></div>`);
+    <div class="pdf-controls"><button class="button button--compact" data-action="pdf-prev" ${state.pdfPage === 0 ? 'disabled' : ''}>Předchozí</button><strong class="small">${documentLabel} · strana ${state.pdfPage+1} / ${pageCount}</strong><button class="button button--compact" data-action="pdf-next" ${state.pdfPage === pageCount-1 ? 'disabled' : ''}>Další</button></div>
+    ${state.pdfPrintPreview ? `<div class="bottom-action"><button class="button button--wide" data-demo-toast="Celé kompletní PDF se všemi ${pageCount} stranami bylo předáno tiskové službě">${icon('print')} Pokračovat k tisku</button></div>` : ''}`);
 }
 
 const adminSections = [
@@ -893,7 +909,8 @@ app.addEventListener('click', event => {
   if (target.dataset.action === 'signature-clear') { state.signature=false; return render(); }
   if (target.dataset.action === 'finalize') { state.final=true; state.signature=true; return navigate('history'); }
   if (target.dataset.action === 'create-revision') { state.final=false; state.signature=false; state.modal='toast:Nová revize byla vytvořena jako samostatná rozpracovaná kontrola.'; state.answers['other.notes']={value:'NOTE',note:'Revize původního protokolu.'}; return render(); }
-  if (target.dataset.pdfDocument) { state.pdfDocument=target.dataset.pdfDocument; state.pdfPage=0; return navigate('pdf'); }
+  if (target.dataset.pdfDocument) { state.pdfDocument=target.dataset.pdfDocument; state.pdfPage=0; state.pdfPrintPreview=false; return navigate('pdf'); }
+  if (target.dataset.printDocument) { state.pdfDocument=target.dataset.printDocument; state.pdfPage=0; state.pdfPrintPreview=true; return navigate('pdf'); }
   if (target.dataset.pdf !== undefined) { state.pdfDocument='complete'; state.pdfPage=Number(target.dataset.pdf); return navigate('pdf'); }
   if (target.dataset.action === 'pdf-prev') { state.pdfPage=Math.max(0,state.pdfPage-1); return render(); }
   if (target.dataset.action === 'pdf-next') { state.pdfPage=Math.min(currentPdfPageCount()-1,state.pdfPage+1); return render(); }

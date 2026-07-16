@@ -234,17 +234,25 @@ async function main() {
       throw new Error(`Protocol must cover all 48 active items across 28+20 rows: ${JSON.stringify({pageOne:protocolPageOne.length,pageTwo:protocolPageTwo.length,unique:protocolKeys.size})}`);
     }
     await click(cdp, '[data-route="history"]');
+    await waitFor(cdp, `document.querySelector('[data-route="work"][aria-label="Zpět"]')`, 'history back arrow');
+    await click(cdp, '[data-print-document="complete"]');
+    await waitFor(cdp, `document.body.innerText.includes('Náhled před tiskem') && document.body.innerText.includes('Pokračovat k tisku')`, 'complete PDF print preview');
+    const printPreview = await evaluate(cdp, `({document:state.pdfDocument,pageCount:currentPdfPageCount(),printPreview:state.pdfPrintPreview})`);
+    if (printPreview.document !== 'complete' || !printPreview.printPreview || printPreview.pageCount < 3) {
+      throw new Error(`Complete print preview is not using the whole document: ${JSON.stringify(printPreview)}`);
+    }
+    await click(cdp, '[data-route="history"]');
     await click(cdp, '[data-pdf-document="photos"]');
     await waitFor(cdp, `document.querySelector('[data-photo-sheet="1"]')`, 'photo PDF first sheet');
-    const photoDocument = await evaluate(cdp, `({pageCount:currentPdfPageCount(),expected:Math.ceil(state.photos.length/4),cards:document.querySelectorAll('.photo-sheet figure').length})`);
+    const photoDocument = await evaluate(cdp, `({pageCount:currentPdfPageCount(),expected:Math.ceil(activePdfPhotos().length/4),cards:document.querySelectorAll('.photo-sheet figure').length})`);
     if (photoDocument.pageCount !== photoDocument.expected || photoDocument.cards !== 4) throw new Error(`Photo PDF does not use four A6 cards per A4: ${JSON.stringify(photoDocument)}`);
     await evaluate(cdp, `state.pdfPage=currentPdfPageCount()-1;render()`);
     await waitFor(cdp, `document.querySelector('[data-photo-sheet="' + currentPdfPageCount() + '"]')`, 'photo PDF final sheet');
-    const lastSheet = await evaluate(cdp, `({cards:document.querySelectorAll('.photo-sheet figure').length,expected:state.photos.length%4||4})`);
+    const lastSheet = await evaluate(cdp, `({cards:document.querySelectorAll('.photo-sheet figure').length,expected:activePdfPhotos().length%4||4})`);
     if (lastSheet.cards !== lastSheet.expected) throw new Error(`Unexpected final photo sheet card count: ${JSON.stringify(lastSheet)}.`);
     await click(cdp, '[data-route="history"]');
     await click(cdp, '[data-pdf-document="complete"]');
-    const completeDocument = await evaluate(cdp, `({pageCount:currentPdfPageCount(),expected:2+Math.ceil(state.photos.length/4),document:state.pdfDocument})`);
+    const completeDocument = await evaluate(cdp, `({pageCount:currentPdfPageCount(),expected:2+Math.ceil(activePdfPhotos().length/4),document:state.pdfDocument})`);
     if (completeDocument.document !== 'complete' || completeDocument.pageCount !== completeDocument.expected) throw new Error(`Complete PDF page count mismatch: ${JSON.stringify(completeDocument)}`);
     await click(cdp, '[data-jump="admin"]');
     await waitFor(cdp, `document.body.innerText.includes('Kontrola dat')`, 'admin menu');
@@ -254,6 +262,15 @@ async function main() {
     await click(cdp, '[data-route="admin"]');
     await click(cdp, '[data-admin="form"]');
     await waitFor(cdp, `document.querySelectorAll('[data-form-item-row]').length === 48`, 'complete Admin checklist');
+    await evaluate(cdp, `(()=>{const entry=managedFormEntry('common.attic'); entry.item.enabled=false; state.formRevision+=1; render();})()`);
+    await evaluate(cdp, `navigate('history')`);
+    await click(cdp, '[data-pdf-document="protocol"]');
+    await click(cdp, '[data-action="pdf-next"]');
+    const disabledPdfItem = await evaluate(cdp, `Boolean(document.querySelector('[data-pdf-row-key="common.attic"]'))`);
+    if (disabledPdfItem) throw new Error('Disabled checklist item remained visible in the generated PDF preview.');
+    await click(cdp, '[data-jump="admin"]');
+    await click(cdp, '[data-admin="form"]');
+    await evaluate(cdp, `(()=>{const entry=managedFormEntry('common.attic'); entry.item.enabled=true; state.formRevision+=1; render();})()`);
     await click(cdp, '[data-action="form-add"]');
     await waitFor(cdp, `document.querySelector('#form-add-name')`, 'add checklist item dialog');
     await evaluate(cdp, `document.querySelector('#form-add-section').value='outside_information'; document.querySelector('#form-add-name').value='Stav hasicích přístrojů';`);
