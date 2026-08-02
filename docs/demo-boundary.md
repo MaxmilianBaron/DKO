@@ -3,7 +3,7 @@
 ## Allowed content
 
 - manually recreated user interface based on approved product behavior
-- fictional Technician and Admin identities
+- fictional Technician identities
 - fictional Prague-style addresses and protocol identifiers
 - synthetic answers, notes, signatures, and PDF content
 - reviewed CC0 illustrative photos with no connection to customer inspections

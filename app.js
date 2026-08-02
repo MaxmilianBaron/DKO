@@ -135,6 +135,9 @@ function initialState() {
     formPendingRemoveKey: null,
     adminEntityId: null,
     adminError: null,
+    videos: [
+      { id: 'V001', address: 'Ukázková 12, Praha 3', capturedAt: '3. 8. 2026 10:15', technician: 'Daniel Novák', note: 'Kontrolní video společných prostor.' },
+    ],
     technicians: [
       { id: 'technician-1', name: 'Daniel Novák', active: true },
       { id: 'technician-2', name: 'Petra Malá', active: true },
@@ -199,6 +202,9 @@ const iconPaths = {
   download: '<path d="M12 3v12M7 10l5 5 5-5M5 21h14"/>',
   print: '<path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7z"/>',
   share: '<circle cx="18" cy="5" r="2"/><circle cx="6" cy="12" r="2"/><circle cx="18" cy="19" r="2"/><path d="m8 11 8-5M8 13l8 5"/>',
+  play: '<path d="m8 5 11 7-11 7V5Z"/>',
+  video: '<rect x="3" y="6" width="14" height="12" rx="2"/><path d="m17 10 4-2v8l-4-2"/>',
+  mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"/>',
   people: '<circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2"/><path d="M3 20a6 6 0 0 1 12 0M15 15a5 5 0 0 1 6 5"/>',
   backup: '<path d="M12 3v12M8 7l4-4 4 4M5 14v7h14v-7"/>',
   shield: '<path d="M12 3 4 6v5c0 5 3.4 8.5 8 10 4.6-1.5 8-5 8-10V6l-8-3Z"/><path d="m8 12 3 3 5-6"/>',
@@ -246,9 +252,9 @@ function activePdfPhotos() {
   return state.photos.filter(photo => enabledKeys.has(photo.itemKey));
 }
 
-function appTopbar(title, subtitle = '', { back = null, menu = false, logout = false } = {}) {
+function appTopbar(title, subtitle = '', { back = null, close = false, logout = false } = {}) {
   return `<header class="app-topbar">
-    ${menu ? `<button class="icon-button" data-action="drawer-open" aria-label="Otevřít hlavní menu">${icon('menu')}</button>` : ''}
+    ${close ? `<button class="icon-button" data-action="app-close" aria-label="Zavřít aplikaci">${icon('close')}</button>` : ''}
     ${back ? `<button class="icon-button" data-route="${back}" aria-label="Zpět">${icon('back')}</button>` : ''}
     <div class="app-topbar-title"><strong>${escapeHtml(title)}</strong>${subtitle ? `<small>${escapeHtml(subtitle)}</small>` : ''}</div>
     ${logout ? `<button class="icon-button" data-action="logout" aria-label="Odhlásit">${icon('logout')}</button>` : ''}
@@ -257,16 +263,13 @@ function appTopbar(title, subtitle = '', { back = null, menu = false, logout = f
 
 function appDrawer() {
   if (!state.drawer) return '';
-  const technician = state.role === 'technician';
-  const entries = technician
-    ? [['history','Historie','history'],['settings','Nastavení','settings'],['work','Práce','work']]
-    : [['history','Historie','history'],['admin','Nastavení','settings']];
+  const entries = [['history','Historie','history'],['settings','Nastavení','settings'],['work','Práce','work']];
   return `<div class="drawer">
     <button class="drawer-backdrop" data-action="drawer-close" aria-label="Zavřít menu"></button>
     <section class="drawer-panel">
       <div class="drawer-head">
         <img src="assets/app-icon.svg" alt="">
-        <div style="flex:1"><strong>DKO</strong><span>Digitální kontrola objektů</span><small>${technician ? 'Daniel Novák · Technik' : 'Demo Admin · Admin'}</small></div>
+        <div style="flex:1"><strong>DKO</strong><span>Digitální kontrola objektů</span><small>Daniel Novák · Technik</small></div>
         <button class="icon-button" data-action="drawer-close">${icon('close')}</button>
       </div>
       <div class="divider"></div>
@@ -283,7 +286,7 @@ function screen(content, options = {}) {
 }
 
 function renderLogin() {
-  return screen(`${appTopbar('Přihlášení do DKO')}
+  return screen(`${appTopbar('Přihlášení do DKO', '', { close: true })}
     <div class="app-scroll"><div class="content content--roomy">
       <section class="hero-card stack">
         <div class="brand-row"><img src="assets/app-icon.svg" alt="Ikona DKO"><div><strong>DKO</strong><span>Digitální kontrola objektů</span></div></div>
@@ -293,13 +296,23 @@ function renderLogin() {
       <h2 class="section-title">Technici</h2>
       <button class="account-card" data-action="login-technician" data-login-name="Daniel Novák"><span class="list-icon">${icon('badge')}</span><span><strong>Daniel Novák</strong><small>Technik · demo účet</small></span></button>
       <button class="account-card" data-action="login-technician" data-login-name="Petra Malá"><span class="list-icon">${icon('badge')}</span><span><strong>Petra Malá</strong><small>Technik · demo účet</small></span></button>
-    </div></div>
-    <div class="bottom-action"><button class="button button--wide button--outline" data-action="login-admin">${icon('admin')} Přihlásit jako Admin</button></div>`);
+    </div></div>`);
+}
+
+function renderMainMenu() {
+  const entries = [['history','Historie','history'],['settings','Nastavení','settings'],['work','Práce','work']];
+  return screen(`${appTopbar('Hlavní nabídka', 'Daniel Novák · Technik', { close: true, logout: true })}
+    <div class="app-scroll"><div class="content content--roomy">
+      <section class="hero-card stack"><strong>DKO</strong><span class="small">Digitální kontrola objektů · data jsou uložena lokálně v telefonu</span></section>
+      <div class="menu-grid">
+        ${entries.map(([route,title,ico]) => `<button class="menu-tile" data-route="${route}"><span class="tile-icon">${icon(ico)}</span><strong>${title}</strong></button>`).join('')}
+      </div>
+    </div></div>`);
 }
 
 function renderWork() {
   const done = totalProgress();
-  return screen(`${appTopbar('Místní šetření', 'Daniel Novák', { menu: true })}
+  return screen(`${appTopbar('Místní šetření', 'Daniel Novák', { back: 'menu' })}
     <div class="app-scroll"><div class="content">
       <section class="card building-card">
         <p class="eyebrow">ROZPRACOVANÁ KONTROLA</p>
@@ -317,7 +330,7 @@ function renderWork() {
         <div class="row-between"><div><strong>Parková 31, Praha 7</strong><div class="muted small">Kontrola za 4 dny</div></div><span class="list-icon">${icon('building')}</span></div>
         <button class="button button--wide button--outline" data-action="start-demo-building">Zahájit</button>
       </section>
-    </div></div>`, { drawer: true });
+    </div></div>`);
 }
 
 function renderInspectionOverview() {
@@ -325,12 +338,13 @@ function renderInspectionOverview() {
   return screen(`${appTopbar('Kontrola objektu', 'Daniel Novák', { back: 'work' })}
     <div class="inspection-meta"><strong>Ukázková 12, 130 00 Praha 3</strong><small>${done}/${allItems.length} hotovo · ${defectsCount()} závady · ${state.photos.length} foto · průběžně uloženo</small></div>
     <div class="app-scroll"><div class="content">
-      <div class="row-between"><div><p class="eyebrow">PŘEHLED KONTROLY</p><h2 class="section-title">Vyberte sekci</h2></div><span class="chip chip--good">Uloženo</span></div>
+      <div class="row-between"><div><p class="eyebrow">RYCHLÁ NAVIGACE</p><h2 class="section-title">Vyberte sekci</h2></div><span class="chip chip--good">Uloženo</span></div>
       <div class="menu-grid">
         ${sections.map(section => {
           const progress = sectionProgress(section);
           return `<button class="menu-tile" data-section="${section.key}"><span class="tile-icon">${icon(section.icon)}</span><strong>${section.title}</strong><small>${progress}/${section.items.length}</small></button>`;
         }).join('')}
+        <button class="menu-tile" data-route="video"><span class="tile-icon">${icon('video')}</span><strong>Video dokumentace</strong><small>Přehrát · stáhnout · sdílet</small></button>
       </div>
       <section class="hero-card stack"><strong>Rozpracovaná kontrola je bezpečně uložená</strong><span class="small">Odpovědi, poznámky a fotografie lze kdykoliv doplnit před podpisem.</span></section>
     </div></div>
@@ -349,6 +363,7 @@ function itemCard(item) {
       ${item.options.map(([value,label,tone]) => `<button class="choice is-${tone} ${answer.value === value ? 'is-selected' : ''}" data-answer="${item.key}" data-value="${value}">${label}</button>`).join('')}
     </div></div>
     <div class="field"><label>Poznámka</label><textarea class="textarea" data-note="${item.key}" placeholder="Doplňte zjištění…">${escapeHtml(answer.note)}</textarea></div>
+    <button class="button button--wide button--outline" data-demo-toast="V produkci se spustí online systémové rozpoznávání řeči; uloží se pouze potvrzený text.">${icon('mic')} Nadiktovat poznámku</button>
     <button class="button button--wide" data-photo-for="${item.key}">${icon('camera')} Přidat další fotografii</button>
     ${additionalPhotos.length ? `<div><p class="small" style="font-weight:700;margin:0 0 7px">Další uložené fotografie</p><div class="photo-row">${additionalPhotos.map(photo => `<button class="photo-thumb" data-edit-photo="${photo.id}"><img src="${photo.markedSrc || photo.src}" alt="${photo.id}"><span>${photo.id}</span></button>`).join('')}</div></div>` : ''}
   </article>`;
@@ -370,10 +385,10 @@ function renderPhotoCapture() {
   return screen(`${appTopbar('Pořízení fotografie', item?.label || 'Kontrolní položka', { back: 'section' })}
     <div class="photo-stage">
       <img src="${pending.src}" alt="Ukázkový snímek objektu">
-      <div class="capture-hint">Demo používá předem připravené anonymní snímky. Skutečná aplikace zde otevře fotoaparát telefonu.</div>
+      <div class="capture-hint">Demo používá anonymní snímky. Produkční aplikace nabízí systémový fotoaparát nebo výběr konkrétní fotografie z telefonu.</div>
     </div>
     <div class="content" style="flex:0 0 auto">
-      <button class="button button--wide button--outline" data-action="choose-photo">${icon('image')} Vybrat ukázkový snímek</button>
+      <button class="button button--wide button--outline" data-action="choose-photo">${icon('image')} Vybrat z fotografií v telefonu</button>
       <div class="button-row"><button class="button button--outline" data-route="section">Zrušit</button><button class="button" data-action="use-photo">${icon('check')} Použít fotografii</button></div>
     </div>`);
 }
@@ -415,9 +430,7 @@ function historyDocuments() {
 }
 
 function renderHistory() {
-  const name = state.role === 'admin' ? 'Demo Admin' : 'Daniel Novák';
-  const backRoute = state.role === 'admin' ? 'admin' : 'work';
-  return screen(`${appTopbar('Historie', name, { back: backRoute, logout: true })}
+  return screen(`${appTopbar('Historie', 'Daniel Novák', { back: 'menu' })}
     <div class="app-scroll"><div class="content">
       <section class="card history-card">
         <strong>Ukázková 12, 130 00 Praha 3</strong>
@@ -432,6 +445,27 @@ function renderHistory() {
         <span class="chip">Nahrazeno revizí</span>
       </section>
     </div></div>`, { drawer: true });
+}
+
+function renderVideoDocumentation() {
+  return screen(`${appTopbar('Video dokumentace', 'Ukázková 12, Praha 3', { back: 'inspection' })}
+    <div class="app-scroll"><div class="content">
+      <section class="outlined-card card-pad stack">
+        <h2 class="section-title">Nové video</h2>
+        <div class="field"><label>Objekt</label><input class="input" value="Ukázková 12, Praha 3" readonly></div>
+        <button class="button button--wide" data-demo-toast="Produkční aplikace otevře systémový fotoaparát a po návratu nabídne kontrolní přehrání před uložením.">${icon('video')} Natočit video</button>
+      </section>
+      <h2 class="section-title">Uložená videa</h2>
+      ${state.videos.map(video => `<section class="card video-card">
+        <div class="row-between"><div class="row"><span class="list-icon">${icon('video')}</span><strong>${video.id}</strong></div><div class="row">
+          <button class="icon-button" data-demo-toast="Video by se otevřelo v systémovém přehrávači." aria-label="Přehrát video">${icon('play')}</button>
+          <button class="icon-button" data-demo-toast="Video bylo staženo pouze v ukázce." aria-label="Stáhnout video">${icon('download')}</button>
+          <button class="icon-button" data-demo-toast="Sdílení videa je ve veřejném demu vypnuté." aria-label="Sdílet video">${icon('share')}</button>
+        </div></div>
+        <span class="small">Objekt: ${escapeHtml(video.address)}</span><span class="small">Datum a čas: ${video.capturedAt}</span><span class="small">Technik: ${escapeHtml(video.technician)}</span><span class="small">Poznámka: ${escapeHtml(video.note)}</span>
+      </section>`).join('')}
+      <section class="hero-card stack"><strong>Video zůstává samostatné</strong><span class="small">Nevstupuje do PDF ani fotolistu a v produkci zůstává pouze lokálně v telefonu.</span></section>
+    </div></div>`);
 }
 
 const pdfDetailSamples = {
@@ -516,12 +550,12 @@ const adminSections = [
 
 function renderAdmin() {
   if (state.adminTab) return renderAdminTab();
-  return screen(`${appTopbar('Nastavení', 'Demo Admin', { menu: true, logout: true })}
+  return screen(`${appTopbar('Nastavení', 'Daniel Novák · Technik', { back: 'menu' })}
     <div class="app-scroll"><div class="content">
       <button class="button button--wide" data-action="technician-add">${icon('plus')} Přidat technika</button>
       <div class="menu-grid">${adminSections.map(([key,title,ico]) => `<button class="menu-tile" data-admin="${key}"><span class="tile-icon">${icon(ico)}</span><strong>${title}</strong></button>`).join('')}</div>
-      <section class="hero-card stack"><strong>Administrace zůstává lokální</strong><span class="small">Účty, objekty, kontrolní seznamy, fotografie, PDF i zálohy jsou spravované přímo v telefonu.</span></section>
-    </div></div>`, { drawer: true });
+      <section class="hero-card stack"><strong>Nastavení je sjednocené pod Technikem</strong><span class="small">Samostatný Admin už není potřeba. Účty, objekty, kontrolní seznamy, fotografie, videa, PDF i zálohy zůstávají lokálně v telefonu.</span></section>
+    </div></div>`);
 }
 
 function adminTabContent(tab) {
@@ -540,7 +574,7 @@ function adminTabContent(tab) {
 
 function renderTechniciansAdmin() {
   const technicians = state.technicians.filter(account => account.active);
-  return `<section class="hero-card stack"><strong>Účty spravuje pouze Admin</strong><span class="small">Technik tuto obrazovku nevidí. Odebrání vyžaduje nové zadání hesla Admina a zachová auditní historii účtu.</span></section>
+  return `<section class="hero-card stack"><strong>Lokální účty techniků</strong><span class="small">Nastavení je dostupné přihlášenému Technikovi. Odebrání zachová auditní historii účtu; právě používaný účet nelze odstranit.</span></section>
     <button class="button button--wide" data-action="technician-add">${icon('plus')} Přidat technika</button>
     <div class="managed-form">${technicians.map(account => `<article class="managed-form-item" data-technician-row="${escapeHtml(account.id)}">
       <span class="list-icon">${icon('badge')}</span>
@@ -552,7 +586,7 @@ function renderTechniciansAdmin() {
 
 function renderBuildingsAdmin() {
   const buildings = state.buildings.filter(building => building.active);
-  return `<section class="hero-card stack"><strong>Správa domů</strong><span class="small">Admin může přidat, upravit nebo odebrat objekt. Odebrání vyžaduje heslo Admina; hotové kontroly a PDF zůstanou zachované.</span></section>
+  return `<section class="hero-card stack"><strong>Správa domů</strong><span class="small">Technik může přidat, upravit nebo odebrat objekt. Hotové kontroly a PDF zůstanou zachované.</span></section>
     <button class="button button--wide" data-action="building-add">${icon('plus')} Přidat dům</button>
     <div class="managed-form">${buildings.map(building => `<article class="managed-form-item" data-building-row="${escapeHtml(building.id)}">
       <span class="list-icon">${icon('building')}</span>
@@ -589,7 +623,7 @@ function renderManagedFormItems() {
 
 function renderAdminTab() {
   const section = adminSections.find(([key]) => key === state.adminTab) || adminSections[0];
-  return screen(`${appTopbar(section[1], 'Demo Admin', { back: 'admin' })}<div class="app-scroll"><div class="content content--roomy">${adminTabContent(section[0])}</div></div>`);
+  return screen(`${appTopbar(section[1], 'Daniel Novák · Technik', { back: 'settings' })}<div class="app-scroll"><div class="content content--roomy">${adminTabContent(section[0])}</div></div>`);
 }
 
 function renderSettings() {
@@ -616,7 +650,7 @@ function renderModal() {
     return `<div class="modal"><section class="dialog" role="dialog" aria-modal="true"><h2>${editing ? 'Upravit technika' : 'Přidat technika'}</h2>
       <div class="field"><label for="technician-name">Jméno technika</label><input id="technician-name" class="input" maxlength="80" autocomplete="off" value="${escapeHtml(account?.name || '')}" placeholder="Např. Jan Nový"></div>
       ${editing ? '' : '<div class="field"><label for="technician-password">Dočasné heslo</label><input id="technician-password" class="input" type="password" autocomplete="new-password" value="demo"></div><div class="field"><label for="technician-password-repeat">Heslo znovu</label><input id="technician-password-repeat" class="input" type="password" autocomplete="new-password" value="demo"></div>'}
-      <p>Jde pouze o fake účet v prohlížeči. V ostré offline aplikaci ho vytváří výhradně Admin.</p>
+      <p>Jde pouze o fake účet v prohlížeči. V ostré offline aplikaci ho spravuje Technik v lokálním Nastavení.</p>
       <div class="button-row"><button class="button button--outline" data-action="modal-close">Zrušit</button><button class="button" data-action="technician-save">${editing ? 'Uložit' : 'Přidat'}</button></div>
     </section></div>`;
   }
@@ -638,7 +672,7 @@ function renderModal() {
     const label = account?.name || building?.address || 'Vybraná položka';
     return `<div class="modal"><section class="dialog" role="dialog" aria-modal="true"><h2>Odstranit ${isTechnician ? 'technika' : 'dům'}?</h2>
       <p><strong>${escapeHtml(label)}</strong> zmizí z aktivního seznamu. Historické kontroly, PDF a auditní údaje zůstanou zachované.</p>
-      <div class="field"><label for="admin-confirm-password">Heslo Admina pro potvrzení</label><input id="admin-confirm-password" class="input" type="password" autocomplete="current-password" placeholder="V demu zadejte demo"></div>
+      <div class="field"><label for="admin-confirm-password">Heslo technika pro potvrzení</label><input id="admin-confirm-password" class="input" type="password" autocomplete="current-password" placeholder="V demu zadejte demo"></div>
       ${state.adminError ? `<p class="primary-text" role="alert">${escapeHtml(state.adminError)}</p>` : ''}
       <div class="button-row"><button class="button button--outline" data-action="modal-close">Zrušit</button><button class="button button--danger" data-action="admin-remove-confirm" ${entity ? '' : 'disabled'}>Odstranit</button></div>
     </section></div>`;
@@ -679,16 +713,17 @@ function renderModal() {
 
 function journeyForRoute(route) {
   if (route === 'login') return 'login';
-  if (['work','settings'].includes(route)) return 'work';
+  if (['menu','work','settings'].includes(route)) return 'work';
   if (['inspection','section','signature'].includes(route)) return 'inspection';
+  if (route === 'video') return 'video';
   if (['photo-capture','photo-edit'].includes(route)) return 'photo';
   if (['history','pdf'].includes(route)) return 'history';
-  if (route === 'admin') return 'admin';
+  if (['admin','settings'].includes(route)) return 'settings';
   return 'login';
 }
 
 function titleForRoute(route) {
-  return ({ login:'Přihlášení do DKO', work:'Objekty a dnešní práce', inspection:'Přehled kontroly', section:'Kontrolní položky', 'photo-capture':'Pořízení fotografie', 'photo-edit':'Označení závady do fotografie', signature:'Elektronický podpis', history:'Historie a dokumenty', pdf:'Náhled PDF', admin:'Admin nastavení', settings:'Nastavení účtu' })[route] || 'DKO demo';
+  return ({ login:'Přihlášení do DKO', menu:'Hlavní nabídka', work:'Objekty a dnešní práce', inspection:'Rychlá navigace kontroly', section:'Kontrolní položky', video:'Video dokumentace', 'photo-capture':'Pořízení fotografie', 'photo-edit':'Označení závady do fotografie', signature:'Elektronický podpis', history:'Historie a dokumenty', pdf:'Náhled PDF', admin:'Nastavení technika', settings:'Nastavení technika' })[route] || 'DKO demo';
 }
 
 function render() {
@@ -699,8 +734,10 @@ function render() {
 
   const routes = {
     login: renderLogin,
+    menu: renderMainMenu,
     work: renderWork,
     inspection: renderInspectionOverview,
+    video: renderVideoDocumentation,
     section: renderInspectionSection,
     'photo-capture': renderPhotoCapture,
     'photo-edit': renderPhotoEdit,
@@ -708,7 +745,7 @@ function render() {
     history: renderHistory,
     pdf: renderPdf,
     admin: renderAdmin,
-    settings: renderSettings,
+    settings: renderAdmin,
   };
   app.innerHTML = (routes[state.route] || renderLogin)();
   if (state.route === 'photo-edit') requestAnimationFrame(initMarkupCanvas);
@@ -717,7 +754,8 @@ function render() {
 
 function navigate(route) {
   if (route === 'admin') { state.role = 'admin'; state.adminTab = null; }
-  if (['work','inspection','section','photo-capture','photo-edit','signature','settings'].includes(route)) state.role = 'technician';
+  if (route === 'settings') state.adminTab = null;
+  if (['menu','work','inspection','section','video','photo-capture','photo-edit','signature','settings'].includes(route)) state.role = 'technician';
   if (route === 'history' && !state.role) state.role = 'technician';
   if (route === 'section' && !sections.some(section => section.key === state.currentSection)) state.currentSection = sections[0].key;
   state.route = route;
@@ -855,6 +893,7 @@ app.addEventListener('click', event => {
   if (target.dataset.action === 'drawer-open') { state.drawer=true; return render(); }
   if (target.dataset.action === 'drawer-close') { state.drawer=false; return render(); }
   if (target.dataset.action === 'logout') { state.role=null; state.route='login'; state.drawer=false; return render(); }
+  if (target.dataset.action === 'app-close') { state.modal='toast:V ostré aplikaci se DKO zavře bez odhlášení technika.'; return render(); }
   if (target.dataset.action === 'login-technician') { state.loginRole='technician'; state.loginName=target.dataset.loginName || 'Daniel Novák'; state.modal='login'; return render(); }
   if (target.dataset.action === 'login-admin') { state.loginRole='admin'; state.loginName='Demo Admin'; state.modal='login'; return render(); }
   if (target.dataset.action === 'confirm-login') {
@@ -863,7 +902,7 @@ app.addEventListener('click', event => {
     const role=state.loginRole;
     state.modal=null;
     state.role=role;
-    return navigate(role==='admin'?'admin':'work');
+    return navigate(role==='admin'?'admin':'menu');
   }
   if (target.dataset.section) { state.currentSection=target.dataset.section; return navigate('section'); }
   if (target.dataset.answer) { state.answers[target.dataset.answer]={...answerFor(target.dataset.answer),value:target.dataset.value}; return render(); }
@@ -954,7 +993,7 @@ app.addEventListener('click', event => {
   if (target.dataset.buildingRemove) { state.adminEntityId=target.dataset.buildingRemove; state.adminError=null; state.modal='admin-remove'; return render(); }
   if (target.dataset.action === 'admin-remove-confirm') {
     const password=document.querySelector('#admin-confirm-password')?.value || '';
-    if(password!=='demo'){state.adminError='Heslo Admina není správné. V demu použijte demo.';return render();}
+    if(password!=='demo'){state.adminError='Heslo technika není správné. V demu použijte demo.';return render();}
     const account=state.technicians.find(value=>value.id===state.adminEntityId);
     const building=state.buildings.find(value=>value.id===state.adminEntityId);
     if(account)account.active=false;
@@ -1029,7 +1068,7 @@ document.addEventListener('click', event => {
   if (target.dataset.demoAction === 'reset') { event.preventDefault(); state=initialState(); return render(); }
   if (target.dataset.demoAction === 'theme') { state.theme=state.theme==='dark'?'light':'dark'; return render(); }
   if (target.dataset.jump) {
-    const map={login:'login',work:'work',inspection:'inspection',photo:'photo-edit',history:'history',admin:'admin'};
+    const map={login:'login',work:'work',inspection:'inspection',photo:'photo-edit',history:'history',video:'video',settings:'settings'};
     if(target.dataset.jump==='photo'){
       state.role='technician';
       const existing=state.photos.find(photo=>photo.itemKey==='exterior.entrance_doors')||state.photos[0];

@@ -55,9 +55,10 @@ async function main(){
     await click(cdp,'[data-action="pdf-next"]');await delay(500);await capture(cdp,'06b-pdf-preview-page-2');
     await click(cdp,'[data-route="history"]');await click(cdp,'[data-pdf-document="photos"]');await delay(900);await capture(cdp,'06c-photo-sheet-preview');
     await click(cdp,'[data-route="history"]');await click(cdp,'[data-print-document="complete"]');await delay(500);await capture(cdp,'06d-complete-print-preview');
-    await click(cdp,'[data-jump="admin"]');await capture(cdp,'07-admin');await click(cdp,'[data-admin="form"]');await capturePhone(cdp,'07b-admin-form-items');
-    await click(cdp,'[data-route="admin"]');await click(cdp,'[data-admin="buildings"]');await capturePhone(cdp,'07c-admin-buildings');
-    await click(cdp,'[data-route="admin"]');await click(cdp,'[data-admin="technicians"]');await capturePhone(cdp,'07d-admin-technicians');
+    await click(cdp,'[data-jump="video"]');await capturePhone(cdp,'11-video-documentation');
+    await click(cdp,'[data-jump="settings"]');await capture(cdp,'07-admin');await click(cdp,'[data-admin="form"]');await capturePhone(cdp,'07b-admin-form-items');
+    await click(cdp,'[data-route="settings"]');await click(cdp,'[data-admin="buildings"]');await capturePhone(cdp,'07c-admin-buildings');
+    await click(cdp,'[data-route="settings"]');await click(cdp,'[data-admin="technicians"]');await capturePhone(cdp,'07d-admin-technicians');
     await click(cdp,'[data-technician-remove="technician-2"]');await capturePhone(cdp,'07e-admin-password-confirmation');
     await cdp.send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
     await cdp.send('Page.navigate',{url});await waitFor(cdp,'[data-action="login-technician"]');await capture(cdp,'08-mobile-login-1to1');
