@@ -6,8 +6,7 @@ Offline-first Android aplikace pro technické kontroly nemovitostí. DKO spojuje
 kontrolní formulář, dokumentaci závad, podpis a výsledný protokol do jednoho
 dohledatelného pracovního postupu.
 
-[Otevřít webový náhled](https://maxmilianbaron.github.io/DKO/) ·
-[Mobilní náhled 1:1](https://maxmilianbaron.github.io/DKO/?mobile=1)
+[Otevřít mobilní náhled 1:1](https://maxmilianbaron.github.io/DKO/)
 
 ## Aktuální verze V84
 
@@ -19,7 +18,7 @@ dohledatelného pracovního postupu.
 - samostatná video dokumentace s přehráním, stažením a sdílením
 - automatická archivace po podpisu a okamžitý náhled kompletního PDF
 - tisk, stažení a sdílení výsledného protokolu
-- jednotná role Technik, trvalé přihlášení a předvídatelná navigace o jeden krok
+- jednotná role Technik, trvalé přihlášení a navigace vždy o jeden krok zpět
 
 Video dokumentace není součástí PDF. Je vedena samostatně s objektem, datem,
 časem, technikem a poznámkou.
@@ -27,38 +26,32 @@ Video dokumentace není součástí PDF. Je vedena samostatně s objektem, datem
 ## Technologie
 
 Produkční aplikace používá Kotlin, Jetpack Compose, Room, CameraX a OCR.
-Veřejný náhled je samostatná statická prezentace bez produkčního zdrojového
-kódu, APK a zákaznických dat.
-
-## Lokální spuštění náhledu
-
-```powershell
-node scripts/serve-demo.mjs 4174
-```
-
-Poté otevřete `http://127.0.0.1:4174/`.
-
-## Ověření
-
-```powershell
-node --check app.js
-node --check scripts/verify-demo.mjs
-node scripts/verify-demo.mjs
-```
-
-Repozitář obsahuje pouze demonstrační data a veřejně licencované podklady.
-Neobsahuje produkční APK, podpisové klíče, databáze ani dokumentaci zákazníků.
+Veřejný náhled představuje aktuální mobilní rozhraní V84 v měřítku 1:1.
 
 ## English
 
-DKO is an offline-first Android application for structured property
-inspections. It combines inspection checklists, defect evidence, meter OCR,
-signatures, video documentation, and auditable PDF reports in one field
-workflow.
+DKO is an offline-first Android application for technical property inspections.
+It combines an inspection form, defect documentation, signatures, and the final
+report in one traceable workflow.
 
-The V84 public preview mirrors the current navigation and feature set using
-demonstration data. Production source code, APK files, signing material,
-customer databases, and customer documentation are not included.
+[Open the 1:1 mobile preview](https://maxmilianbaron.github.io/DKO/)
 
-[Open the web preview](https://maxmilianbaron.github.io/DKO/) ·
-[Open the 1:1 mobile preview](https://maxmilianbaron.github.io/DKO/?mobile=1)
+## Current version V84
+
+- 48 inspection items across nine specialist sections
+- continuous local saving of inspections in progress
+- photos from the system camera or gallery, preview, and defect marking
+- three-stage meter capture: reading OCR, serial-number OCR, and a full meter photo
+- typed and voice-dictated notes; audio recordings are not stored
+- separate video documentation with playback, download, and sharing
+- automatic archiving after signature and immediate preview of the complete PDF
+- printing, downloading, and sharing of the final report
+- unified Technician role, persistent login, and navigation one step back at a time
+
+Video documentation is not included in the PDF. It is stored separately with
+the property, date, time, technician, and note.
+
+## Technology
+
+The production application uses Kotlin, Jetpack Compose, Room, CameraX, and OCR.
+The public preview presents the current V84 mobile interface at a 1:1 scale.

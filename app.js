@@ -1,6 +1,5 @@
 const app = document.querySelector('#app');
-const query = new URLSearchParams(window.location.search);
-document.documentElement.classList.toggle('mobile-mode', query.get('mobile') === '1');
+document.documentElement.classList.add('mobile-mode');
 
 app.addEventListener('error', event => {
   const image = event.target;

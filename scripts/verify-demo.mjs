@@ -229,8 +229,8 @@ async function main() {
     if (protocolPageOne.length !== 28) throw new Error(`Protocol page one must contain 28 active items, received ${protocolPageOne.length}.`);
     await click(cdp, '[data-action="pdf-next"]');
     await waitFor(cdp, `document.querySelector('[data-protocol-page="2"]')`, 'protocol PDF page two');
-    const protocolDesktopFrame = await evaluate(cdp, `({mobileMode:document.documentElement.classList.contains('mobile-mode'),sidebar:getComputedStyle(document.querySelector('.demo-sidebar')).display,viewport:innerWidth})`);
-    if (protocolDesktopFrame.mobileMode || protocolDesktopFrame.sidebar === 'none') throw new Error(`Desktop frame disappeared on PDF page two: ${JSON.stringify(protocolDesktopFrame)}`);
+    const protocolMobileFrame = await evaluate(cdp, `({mobileMode:document.documentElement.classList.contains('mobile-mode'),sidebar:getComputedStyle(document.querySelector('.demo-sidebar')).display,phoneWidth:document.querySelector('.phone').getBoundingClientRect().width,viewport:innerWidth})`);
+    if (!protocolMobileFrame.mobileMode || protocolMobileFrame.sidebar !== 'none' || protocolMobileFrame.phoneWidth !== protocolMobileFrame.viewport) throw new Error(`The 1:1 mobile frame changed on PDF page two: ${JSON.stringify(protocolMobileFrame)}`);
     const protocolPageTwo = await evaluate(cdp, `Array.from(document.querySelectorAll('[data-pdf-row-key]'), row => row.dataset.pdfRowKey)`);
     const protocolKeys = new Set([...protocolPageOne, ...protocolPageTwo]);
     if (protocolPageTwo.length !== 20 || protocolKeys.size !== 48) {
