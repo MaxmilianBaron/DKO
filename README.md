@@ -6,7 +6,7 @@ dohledatelného pracovního postupu.
 
 [Otevřít mobilní náhled 1:1](https://maxmilianbaron.github.io/DKO/)
 
-## Aktuální verze V84
+## Aktuální verze
 
 - 48 kontrolních položek v devíti odborných sekcích
 - průběžné lokální ukládání rozpracované kontroly
