@@ -24,4 +24,4 @@ Video dokumentace není součástí PDF. Je vedena samostatně s objektem, datem
 ## Technologie
 
 Produkční aplikace používá Kotlin, Jetpack Compose, Room, CameraX a OCR.
-Veřejný náhled představuje aktuální mobilní rozhraní V84 v měřítku 1:1.
+Veřejný náhled představuje aktuální mobilní rozhraní v měřítku 1:1.
