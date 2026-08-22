@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108" role="img" aria-labelledby="title description">
+  <title id="title">DSO</title>
+  <desc id="description">Digitální Správa Objektů</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#20c5ff"/>
+      <stop offset="0.52" stop-color="#0b78f6"/>
+      <stop offset="1" stop-color="#4548e7"/>
+    </linearGradient>
+  </defs>
+  <path d="M20 2h68a18 18 0 0 1 18 18v68a18 18 0 0 1-18 18H20A18 18 0 0 1 2 88V20A18 18 0 0 1 20 2Z" fill="url(#background)"/>
+  <path d="M28 82h52" fill="none" stroke="#fff" stroke-linecap="round" stroke-width="4"/>
+  <path d="M34 77V42l20-12 20 12v35" fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"/>
+  <path d="M42 46h5v6h-5zm19 0h5v6h-5zM42 58h5v6h-5zm19 0h5v6h-5zM42 70h5v6h-5zm19 0h5v6h-5z" fill="#fff"/>
+</svg>
